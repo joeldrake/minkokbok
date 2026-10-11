@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { cloudEnabled, db } from './db';
 import { useCurrentUser } from './composables/useCurrentUser';
+import LoginDialog from './components/LoginDialog.vue';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -59,6 +60,8 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
       </wa-callout>
       <RouterView />
     </main>
+
+    <LoginDialog v-if="cloudEnabled" />
   </wa-page>
 </template>
 

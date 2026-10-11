@@ -1,0 +1,28 @@
+{{!--
+    HTML template for One-Time-Password email
+    =========================================
+
+    Available params:
+
+      {{originName}}: The name of the origin (e.g. "myapp.company.com")
+
+      {{otp}}: The OTP code
+
+      {{otpId}}: The OTP ID. Can be used to generate magic links to your app. App can use db.cloud.login({email, otpId, otp}), reading these params from query.
+
+      {{isApp}}: True if the OTP is to be entered in an app, false if it's to be entered on a web site.
+
+      {{email}}: The email address of the receiving user.
+
+--}}
+<div style="font-family: Georgia, 'Times New Roman', serif; font-size: 18px; line-height: 1.6; color: #2b2118; max-width: 32em;">
+  <p style="margin: 0 0 1em;">Hej!</p>
+  <p style="margin: 0 0 1em;">Här är din kod för att logga in på <strong>Min Kokbok</strong>:</p>
+  <p style="margin: 0 0 1em; padding: 16px 24px; background: #fff4ea; border: 2px solid #e8670c; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 32px; font-weight: bold; letter-spacing: 4px; text-align: center;">{{otp}}</p>
+  <p style="margin: 0 0 1em;">Gå tillbaka till Min Kokbok och skriv in koden i rutan där det står <em>”Koden från mejlet”</em>. Koden fungerar bara en gång och bara en kort stund.</p>
+  <p style="margin: 0 0 1em; padding: 12px 16px; background: #f6f1ea; border-radius: 8px;">
+    <strong>Var försiktig:</strong> skriv bara in koden på <strong>{{originName}}</strong>. Lämna aldrig ut den till någon annan, inte ens om någon ringer eller mejlar och säger att de jobbar för Min Kokbok.
+  </p>
+  <p style="margin: 0 0 1em;">Har du inte försökt logga in? Då kan du strunta i det här mejlet. Ingen kan komma åt dina recept utan koden.</p>
+  <p style="margin: 0;">Hälsningar<br />Min Kokbok</p>
+</div>

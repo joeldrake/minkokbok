@@ -24,5 +24,7 @@ if (databaseUrl) {
   db.cloud.configure({
     databaseUrl,
     requireAuth: false,
+    // Inloggningsrutan ritas av LoginDialog.vue i stället för Dexie Clouds inbyggda.
+    customLoginGui: true,
   });
 }

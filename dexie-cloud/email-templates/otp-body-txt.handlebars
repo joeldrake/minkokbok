@@ -1,0 +1,32 @@
+{{!--
+    Text template for One-Time-Password email
+    =========================================
+
+    Available params:
+
+      {{{originName}}}: The name of the origin (e.g. "myapp.company.com")
+
+      {{{otp}}}: The OTP code
+
+      {{{otpId}}}: The OTP ID. Can be used to generate magic links to your app. App can use db.cloud.login({email, otpId, otp}), reading these params from query.
+
+      {{{isApp}}}: True if the OTP is to be entered in an app, false if it's to be entered on a web site.
+      
+      {{{email}}}: The email address of the receiving user.
+
+--}}
+Hej!
+
+Här är din kod för att logga in på Min Kokbok:
+
+    {{{otp}}}
+
+Gå tillbaka till Min Kokbok och skriv in koden i rutan där det står "Koden från mejlet".
+Koden fungerar bara en gång och bara en kort stund.
+
+Skriv bara in koden på {{{originName}}}. Lämna aldrig ut den till någon annan, inte ens om någon ringer eller mejlar och säger att de jobbar för Min Kokbok.
+
+Har du inte försökt logga in? Då kan du strunta i det här mejlet. Ingen kan komma åt dina recept utan koden.
+
+Hälsningar
+Min Kokbok

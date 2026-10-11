@@ -93,6 +93,43 @@ export default {
     viewPublic: 'Visa min publika sida',
     needsLogin: 'Logga in för att skapa en publik profil.',
   },
+  login: {
+    cancel: 'Avbryt',
+    email: {
+      title: 'Logga in',
+      intro: 'Skriv din e-postadress. Vi skickar ett mejl med en kod som du sedan skriver in här. Du behöver inget lösenord.',
+      submit: 'Skicka koden till min e-post',
+    },
+    otp: {
+      title: 'Kolla din e-post',
+      intro: 'Öppna mejlet från Min Kokbok och skriv av koden som står där. Hittar du inte mejlet? Titta i skräpposten.',
+      submit: 'Logga in',
+    },
+    'logout-confirmation': {
+      title: 'Logga ut?',
+      submit: 'Logga ut ändå',
+      cancel: 'Stanna kvar',
+    },
+    'message-alert': {
+      submit: 'OK',
+    },
+    fields: {
+      email: { label: 'Din e-postadress', hint: 'T.ex. anna.andersson{\'@\'}gmail.com' },
+      otp: { label: 'Koden från mejlet' },
+    },
+    alerts: {
+      OTP_SENT: 'Vi har skickat ett mejl till {email}.',
+      INVALID_EMAIL: 'Det ser inte ut som en e-postadress. Kontrollera att den är rätt skriven, med {\'@\'} och punkt.',
+      INVALID_OTP: 'Koden stämmer inte. Kontrollera att du skrivit av den rätt, eller begär en ny kod.',
+      LOGOUT_CONFIRMATION: '{numUnsyncedChanges} ändringar har inte hunnit sparas på nätet än och försvinner om du loggar ut nu.',
+      GENERIC_ERROR: 'Något gick fel. Försök igen om en liten stund.',
+      USER_NOT_REGISTERED: 'Den här e-postadressen har inget konto.',
+      USER_NOT_ACCEPTED: 'Kontot är inte godkänt än.',
+      USER_DEACTIVATED: 'Kontot är avstängt.',
+      LICENSE_LIMIT_REACHED: 'Det går inte att skapa fler konton just nu.',
+      NO_SEATS_AVAILABLE: 'Det går inte att skapa fler konton just nu.',
+    },
+  },
   public: {
     recipesBy: 'Recept från {name}',
     empty: '{name} har inte delat några recept än.',

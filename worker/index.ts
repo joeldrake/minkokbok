@@ -3,9 +3,14 @@
  *
  * Adminfunktionerna (lista konton, sätta roller, ta bort konton) kräver Dexie Clouds
  * REST-API med klientnyckeln, som aldrig får skickas till webbläsaren.
+ *
+ * Publika receptsidor (/[användarnamn]/[slug]) får Open Graph-taggar inlagda i HTML:en,
+ * eftersom de som hämtar förhandsvisningar (Facebook, Slack, iMessage …) inte kör JavaScript.
  */
 
-interface Env {
+import { ogImageResponse, publicRecipePage } from './og';
+
+export interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   DEXIE_DB_URL: string;
   DEXIE_CLIENT_ID: string;
@@ -40,7 +45,16 @@ interface DexieUser {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-    if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(request);
+    if (!url.pathname.startsWith('/api/')) {
+      try {
+        if (url.pathname.startsWith('/og/')) return await ogImageResponse(url, env);
+        return (await publicRecipePage(request, url, env)) ?? env.ASSETS.fetch(request);
+      } catch (error) {
+        // Går Dexie Cloud inte att nå visas sidan ändå, bara utan förhandsvisning.
+        console.error(error);
+        return env.ASSETS.fetch(request);
+      }
+    }
     try {
       return await handleApi(request, url, env);
     } catch (error) {

@@ -1,12 +1,18 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { RouteLocationRaw } from 'vue-router';
 import type { Recipe } from '../db/types';
 import { isPublic } from '../db/recipes';
 import { totalMinutes } from '../utils';
 import RecipeCover from './RecipeCover.vue';
 
-const props = defineProps<{ recipe: Recipe & { realmId?: string }; showPublicTag?: boolean }>();
+const props = defineProps<{
+  recipe: Recipe & { realmId?: string };
+  showPublicTag?: boolean;
+  /** Vart kortet länkar. Standard är receptsidan i appen, /recept/:id. */
+  to?: RouteLocationRaw;
+}>();
 const { t } = useI18n();
 
 // Utan innehåll renderas ingen sidfot, så kortet inte får en tom rad längst ner.
@@ -16,7 +22,7 @@ const hasFooter = computed(
 </script>
 
 <template>
-  <RouterLink :to="{ name: 'recipe', params: { id: recipe.id } }" class="plain-link card-link">
+  <RouterLink :to="to ?? { name: 'recipe', params: { id: recipe.id } }" class="plain-link card-link">
     <wa-card class="recipe-card">
       <RecipeCover v-if="recipe.cover" slot="media" :cover="recipe.cover" />
       <div class="wa-stack wa-gap-xs">

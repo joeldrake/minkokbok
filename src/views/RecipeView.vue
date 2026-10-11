@@ -1,20 +1,51 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { db } from '../db';
 import type { Ingredient } from '../db/types';
+import { findPublicRecipe, isPublic } from '../db/recipes';
 import { useLiveQuery } from '../composables/useLiveQuery';
 import RecipeCover from '../components/RecipeCover.vue';
 
-const props = defineProps<{ id: string }>();
+/** Antingen /recept/:id, eller den publika adressen /:username/:slug. */
+const props = defineProps<{ id?: string; username?: string; slug?: string }>();
 const { t } = useI18n();
 const router = useRouter();
 
-const recipe = useLiveQuery(
-  async () => (await db.recipes.get(props.id)) ?? null,
-  () => props.id,
+const data = useLiveQuery(
+  async () => {
+    if (props.id) {
+      const recipe = await db.recipes.get(props.id);
+      const profile = recipe?.owner ? await db.profiles.where('owner').equals(recipe.owner).first() : undefined;
+      return recipe ? { recipe, profile } : null;
+    }
+    if (!props.username || !props.slug) return null;
+    const profile = await db.profiles.where('username').equals(props.username.toLowerCase()).first();
+    const recipe = profile && (await findPublicRecipe(profile.owner!, props.slug));
+    return recipe ? { recipe, profile } : null;
+  },
+  () => [props.id, props.username, props.slug],
 );
+const recipe = computed(() => (data.value === undefined ? undefined : (data.value?.recipe ?? null)));
+
+/** Den publika adressen, som går att dela med vem som helst. */
+const publicUrl = computed(() => {
+  const value = data.value;
+  if (!value?.profile || !value.recipe.slug || !isPublic(value.recipe)) return undefined;
+  return `${location.origin}/${value.profile.username}/${value.recipe.slug}`;
+});
+
+// En gammal slug (titeln har ändrats sedan länken delades) byts mot den aktuella.
+watch(data, (value) => {
+  if (props.slug && value?.recipe.slug && value.recipe.slug !== props.slug) {
+    router.replace({ name: 'publicRecipe', params: { username: value.profile!.username, slug: value.recipe.slug } });
+  }
+});
+
+watch(recipe, (value) => {
+  document.title = value ? `${value.title} – Min Kokbok` : 'Min Kokbok';
+});
 
 const isOwner = computed(() => {
   const owner = recipe.value?.owner;
@@ -51,12 +82,19 @@ const ingredientGroups = computed(() => {
         <RecipeCover v-if="recipe.cover" :cover="recipe.cover" class="cover" />
         <div class="title-row">
           <h1 class="wa-heading-3xl">{{ recipe.title }}</h1>
+          <wa-copy-button
+            v-if="publicUrl"
+            class="quiet-button"
+            :value="publicUrl"
+            :copy-label="t('recipe.copyLink')"
+            :success-label="t('recipe.linkCopied')"
+          ></wa-copy-button>
           <wa-button
             v-if="isOwner"
-            class="edit-button"
+            class="quiet-button"
             appearance="plain"
             size="s"
-            @click="router.push({ name: 'edit', params: { id } })"
+            @click="router.push({ name: 'edit', params: { id: recipe.id } })"
           >
             <wa-icon name="pen" :label="t('recipe.edit')"></wa-icon>
           </wa-button>
@@ -128,14 +166,14 @@ const ingredientGroups = computed(() => {
   flex: 1;
 }
 
-.edit-button {
+.quiet-button {
   color: var(--wa-color-text-quiet);
   opacity: 0.6;
   transition: opacity var(--wa-transition-fast, 150ms);
 }
 
-.edit-button:hover,
-.edit-button:focus-within {
+.quiet-button:hover,
+.quiet-button:focus-within {
   opacity: 1;
 }
 

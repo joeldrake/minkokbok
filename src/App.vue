@@ -11,10 +11,12 @@ const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
 const { user, isLoggedIn, isLoading, isAdmin, profile } = useCurrentUser();
+const year = new Date().getFullYear();
 
 function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
   const action = event.detail.item.value;
   if (action === 'profile') router.push({ name: 'profile' });
+  if (action === 'public' && profile.value) router.push({ name: 'public', params: { username: profile.value.username } });
   if (action === 'admin') router.push({ name: 'admin' });
   if (action === 'logout') db.cloud.logout();
 }
@@ -38,6 +40,10 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
             <wa-dropdown-item value="profile">
               <wa-icon slot="icon" name="user"></wa-icon>
               {{ t('nav.profile') }}
+            </wa-dropdown-item>
+            <wa-dropdown-item v-if="profile" value="public">
+              <wa-icon slot="icon" name="globe"></wa-icon>
+              {{ t('nav.publicPage') }}
             </wa-dropdown-item>
             <wa-dropdown-item v-if="isAdmin" value="admin">
               <wa-icon slot="icon" name="users-gear"></wa-icon>
@@ -77,13 +83,7 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
           <BrandLogo class="footer-logo" />
           <span class="footer-name">{{ t('app.name') }}</span>
         </div>
-        <nav class="wa-cluster wa-gap-l wa-caption-m">
-          <RouterLink :to="{ name: 'import' }">{{ t('nav.importRecipes') }}</RouterLink>
-          <RouterLink v-if="profile" :to="{ name: 'public', params: { username: profile.username } }">
-            {{ t('nav.publicPage') }}
-          </RouterLink>
-          <RouterLink v-if="isLoggedIn" :to="{ name: 'profile' }">{{ t('nav.profile') }}</RouterLink>
-        </nav>
+        <span class="wa-caption-m wa-color-text-quiet">{{ year }}</span>
       </div>
     </footer>
 

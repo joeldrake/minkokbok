@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n';
 import { db, PUBLIC_REALM } from '../db';
 import { useLiveQuery } from '../composables/useLiveQuery';
+import { publicRecipeRoute } from '../db/recipes';
 import RecipeCard from '../components/RecipeCard.vue';
 
 const props = defineProps<{ username: string }>();
@@ -41,7 +42,12 @@ const data = useLiveQuery(
         {{ t('public.empty', { name: data.profile.displayName }) }}
       </p>
       <div class="wa-grid wa-gap-l recipe-grid">
-        <RecipeCard v-for="recipe in data.recipes" :key="recipe.id" :recipe="recipe" />
+        <RecipeCard
+          v-for="recipe in data.recipes"
+          :key="recipe.id"
+          :recipe="recipe"
+          :to="publicRecipeRoute(recipe, data.profile.username)"
+        />
       </div>
     </template>
   </div>

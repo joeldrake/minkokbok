@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { db, PUBLIC_REALM } from '../db';
 import { useCurrentUser } from '../composables/useCurrentUser';
+import { useLiveQuery } from '../composables/useLiveQuery';
 import { inputValue } from '../utils';
 import { syncRejections } from '../db/syncRejections';
 import PalettePicker from '../components/PalettePicker.vue';
@@ -30,6 +31,22 @@ watch(
   { immediate: true },
 );
 
+/**
+ * Om någon annan profil i den publika realmen redan har namnet. Alla profiler ligger i
+ * rlm-public, som synkas hit i sin helhet. Servern kontrollerar inte unikhet; se
+ * beslutsunderlaget.
+ */
+async function isUsernameTaken(username: string) {
+  const existing = await db.profiles.where('username').equals(username).first();
+  return Boolean(existing && existing.id !== profile.value?.id);
+}
+
+// Visar direkt medan man skriver om namnet redan är upptaget.
+const usernameTaken = useLiveQuery(
+  () => isUsernameTaken(form.username.trim()),
+  () => [form.username.trim(), profile.value?.id],
+);
+
 async function onSubmit() {
   error.value = '';
   saved.value = false;
@@ -38,11 +55,19 @@ async function onSubmit() {
     error.value = t('profile.usernameInvalid');
     return;
   }
-  // OBS: kontrollerar bara mot profiler som synkats hit. Se beslutsunderlaget om unika namn.
-  const existing = await db.profiles.where('username').equals(username).first();
-  if (existing && existing.id !== profile.value?.id) {
-    error.value = t('profile.usernameTaken');
-    return;
+  if (username !== profile.value?.username) {
+    // Hämta det senaste från den publika realmen så att kontrollen inte går mot gammal data.
+    // Går det inte att nå servern sparar vi inte, eftersom namnet då inte kan kontrolleras.
+    try {
+      await db.cloud.sync({ wait: true, purpose: 'pull' });
+    } catch {
+      error.value = t('profile.usernameUnverified');
+      return;
+    }
+    if (await isUsernameTaken(username)) {
+      error.value = t('profile.usernameTaken');
+      return;
+    }
   }
   const rejectionsBefore = syncRejections.value.length;
   const data = { username, displayName: form.displayName.trim() || username, bio: form.bio.trim() || undefined };
@@ -94,6 +119,7 @@ async function onSubmit() {
       >
         <span slot="start" class="wa-color-text-quiet">/</span>
       </wa-input>
+      <wa-callout v-if="usernameTaken && !error" variant="danger" size="s">{{ t('profile.usernameTaken') }}</wa-callout>
       <wa-input
         :label="t('profile.displayName')"
         :value="form.displayName"
@@ -105,7 +131,7 @@ async function onSubmit() {
       <wa-callout v-if="saved" variant="success" size="s">{{ t('profile.saved') }}</wa-callout>
 
       <div class="wa-cluster wa-gap-s">
-        <wa-button type="submit" variant="brand" :loading="saving">{{ t('profile.save') }}</wa-button>
+        <wa-button type="submit" variant="brand" :loading="saving" :disabled="usernameTaken">{{ t('profile.save') }}</wa-button>
         <wa-button
           v-if="profile"
           appearance="plain"

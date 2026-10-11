@@ -1,60 +1,28 @@
 # Min Kokbok
 
-Dina recept, alltid nära till hands. En local-first webbapp där du sparar recept, synkar mellan mobil och dator och delar utvalda recept på din egen publika sida.
+Min Kokbok är en webbapp för att samla dina egna recept på ett ställe. Du når den här:
 
-Bakgrund och tekniska val: [docs/beslutsunderlag.md](docs/beslutsunderlag.md).
+👉 **https://minkokbok.joeldrak3.workers.dev**
 
-## Stack
+## Vad kan man göra?
 
-- **Vue 3** + TypeScript, **Vue Router**, **vue-i18n** (svenska)
-- **Vite** (byts till Vite+ senare)
-- **Web Awesome 3** som designsystem
-- **Dexie** (IndexedDB) + **Dexie Cloud** för inloggning, synk och publika recept
-- **Cloudflare Workers** (static assets) för hosting
+- **Spara recept** med ingredienser, steg och bild.
+- **Ha dem med dig överallt.** Logga in så finns recepten både i mobilen och på datorn, och ändringar följer med automatiskt.
+- **Dela dina favoriter.** Välj ut recept och visa dem på din egen publika sida, som vänner och familj kan besöka utan att logga in.
 
 ## Kom igång
+
+1. Gå till adressen ovan i webbläsaren, på mobilen eller datorn.
+2. Börja lägga in recept direkt. Utan inloggning sparas de bara i den webbläsaren.
+3. Logga in med din e-postadress för att få recepten på alla dina enheter och kunna dela dem.
+
+**Tips:** På mobilen kan du lägga till Min Kokbok på hemskärmen (via _Dela_ → _Lägg till på hemskärmen_), så öppnas den som en vanlig app.
+
+## För utvecklare
 
 ```bash
 npm install
 npm run dev
 ```
 
-Utan Dexie Cloud körs appen i lokalt läge: allt sparas bara i webbläsaren.
-
-### Koppla på Dexie Cloud (inloggning och synk)
-
-```bash
-npx dexie-cloud create          # skapar en databas (verifieras via e-post)
-npx dexie-cloud whitelist http://localhost:5173
-cp .env.example .env.local      # fyll i VITE_DEXIE_CLOUD_URL från dexie-cloud.json
-```
-
-`dexie-cloud.json` och `dexie-cloud.key` innehåller hemligheter och är ignorerade av git.
-
-## Skript
-
-| Kommando | Gör |
-|---|---|
-| `npm run dev` | Startar utvecklingsservern |
-| `npm run build` | Typkontroll + produktionsbygge till `dist/` |
-| `npm test` | Kör tester (Vitest) |
-| `npm run lint` | Lintar med Oxlint |
-| `npm run deploy` | Bygger och deployar till Cloudflare (kräver `npx wrangler login`) |
-
-## Struktur
-
-```
-src/
-  db/           Dexie-databas, typer, receptfunktioner och tolkning av ingredienser/steg
-  composables/  useLiveQuery (reaktiva Dexie-frågor) och useCurrentUser
-  components/   Återanvändbara Vue-komponenter
-  views/        Sidor: lista, recept, redigera, profil, publik sida (/[användarnamn])
-  i18n/         Översättningar (all UI-text ligger här)
-  styles/       Temat ovanpå Web Awesome (--wa-*-tokens)
-```
-
-## Konventioner
-
-- **All UI-text** går via `vue-i18n` (`src/i18n/sv.ts`), aldrig hårdkodad i mallar.
-- **Web Awesome:** använd komponenter, layoutklasser (`wa-stack`, `wa-cluster`, `wa-grid`) och `--wa-*`-tokens i stället för egna färger och px-värden. `v-model` fungerar inte på `wa-*`. Använd `:value` + `@input="x = inputValue($event)"`.
-- **Data** läses med `useLiveQuery` så att vyerna uppdateras automatiskt när synken tar in ändringar från andra enheter.
+Bakgrund, tekniska val och hur appen är uppbyggd finns i [docs/beslutsunderlag.md](docs/beslutsunderlag.md).

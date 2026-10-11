@@ -10,7 +10,6 @@ export default {
     login: "Logga in",
     logout: "Logga ut",
     account: "Konto",
-    importRecipes: "Importera recept",
     publicPage: "Min publika sida",
   },
   cloud: {
@@ -66,6 +65,8 @@ export default {
     notFoundText:
       "Det kan ha tagits bort, eller så har det inte synkats hit än.",
     backToList: "Tillbaka till mina recept",
+    copyLink: "Kopiera länk",
+    linkCopied: "Länken är kopierad",
     public: "Visa på min publika sida",
     publicHint: "Publika recept syns för alla på {url}",
     publicNeedsLogin: "Logga in för att kunna dela recept publikt.",
@@ -118,6 +119,8 @@ export default {
     usernameHint: "Används i adressen till din publika sida: {url}",
     usernameInvalid: "Använd 3–30 tecken: a–z, 0–9 och bindestreck.",
     usernameTaken: "Användarnamnet är redan taget.",
+    usernameUnverified:
+      "Kunde inte kontrollera om användarnamnet är ledigt. Kontrollera din anslutning och försök igen.",
     displayName: "Visningsnamn",
     bio: "Om dig",
     save: "Spara profil",

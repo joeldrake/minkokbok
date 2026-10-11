@@ -15,7 +15,13 @@ export const router = createRouter({
     },
     { path: '/admin', name: 'admin', component: () => import('./views/AdminView.vue') },
     { path: '/profil', name: 'profile', component: () => import('./views/ProfileView.vue') },
-    // Publik sida ligger sist så att den inte fångar appens egna sökvägar.
+    // Publika sidor ligger sist så att de inte fångar appens egna sökvägar.
+    {
+      path: '/:username/:slug',
+      name: 'publicRecipe',
+      component: () => import('./views/RecipeView.vue'),
+      props: true,
+    },
     {
       path: '/:username',
       name: 'public',

@@ -49,6 +49,15 @@ export interface Recipe {
   tags: string[];
   source?: { kind: RecipeSourceKind; url?: string };
   cover?: Cover;
+  /**
+   * Del av den publika adressen, /[användarnamn]/[slug]. Räknas fram ur titeln och är
+   * unik bland ägarens recept.
+   */
+  slug?: string;
+  /** Tidigare slugs, så att gamla delade länkar fortsätter fungera när titeln ändras. */
+  slugHistory?: string[];
+  /** Förhandsbild (1200×630) för länkar som delas i sociala medier. Finns bara på publika recept. */
+  ogImage?: Blob;
   createdAt: number;
   updatedAt: number;
 }

@@ -5,12 +5,13 @@ import { useRouter } from 'vue-router';
 import { db } from '../db';
 import { useLiveQuery } from '../composables/useLiveQuery';
 import { useCurrentUser } from '../composables/useCurrentUser';
+import { publicRecipeRoute } from '../db/recipes';
 import RecipeCard from '../components/RecipeCard.vue';
 import { inputValue } from '../utils';
 
 const { t } = useI18n();
 const router = useRouter();
-const { user } = useCurrentUser();
+const { user, profile } = useCurrentUser();
 const query = ref('');
 
 // Den publika realmen synkas till alla, så filtrera fram de egna recepten.
@@ -71,7 +72,13 @@ const filtered = computed(() => {
 
       <p v-if="filtered?.length === 0" class="wa-color-text-quiet">{{ t('list.noMatches', { query }) }}</p>
       <div class="wa-grid wa-gap-l recipe-grid">
-        <RecipeCard v-for="recipe in filtered" :key="recipe.id" :recipe="recipe" show-public-tag />
+        <RecipeCard
+          v-for="recipe in filtered"
+          :key="recipe.id"
+          :recipe="recipe"
+          :to="publicRecipeRoute(recipe, profile?.username)"
+          show-public-tag
+        />
       </div>
     </template>
   </div>

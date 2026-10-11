@@ -2,12 +2,13 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "minkokbok",
   "compatibility_date": "2026-09-25",
-  // Hanterar /api/*. Allt annat går direkt till de statiska filerna.
+  // Hanterar /api/*, förhandsbilder på /og/* och Open Graph-taggar för publika recept
+  // (/[användarnamn]/[slug]). Allt annat går direkt till de statiska filerna.
   "main": "worker/index.ts",
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"],
+    "run_worker_first": ["/api/*", "/og/*", "/*/*", "!/assets/*", "!/icons/*", "!/splash/*", "!/recept/*"],
     // Låt Vue Router hantera alla sökvägar, t.ex. /anna
     "not_found_handling": "single-page-application"
   },

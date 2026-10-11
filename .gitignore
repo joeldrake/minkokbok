@@ -1,0 +1,8 @@
+node_modules
+dist
+.wrangler
+.env.local
+dexie-cloud.json
+dexie-cloud.key
+*.log
+.DS_Store

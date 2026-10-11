@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "receptladan",
+  "compatibility_date": "2026-09-25",
+  "assets": {
+    "directory": "./dist",
+    // Låt Vue Router hantera alla sökvägar, t.ex. /anna
+    "not_found_handling": "single-page-application"
+  }
+}

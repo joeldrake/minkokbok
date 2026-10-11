@@ -1,0 +1,38 @@
+/*
+ * Receptlådans tema ovanpå Web Awesome.
+ * Basen sätts med klasser på <html> (wa-theme-default, wa-palette-default, wa-brand-orange).
+ * Alla --wa-*-justeringar samlas här.
+ */
+:root {
+  --wa-font-family-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --wa-border-radius-scale: 1.5;
+  --wa-space-scale: 1.05;
+}
+
+wa-page {
+  --menu-width: auto;
+}
+
+/* Sidans innehåll: centrerad, läsvänlig bredd */
+.page-content {
+  inline-size: 100%;
+  max-inline-size: 72rem;
+  margin-inline: auto;
+}
+
+.page-content.narrow {
+  max-inline-size: 44rem;
+}
+
+/* Rubriker med varmare typsnitt */
+h1,
+h2,
+h3 {
+  font-family: var(--wa-font-family-heading);
+  text-wrap: balance;
+}
+
+a.plain-link {
+  color: inherit;
+  text-decoration: none;
+}

@@ -5,6 +5,7 @@ export const router = createRouter({
   routes: [
     { path: '/', name: 'list', component: () => import('./views/RecipeListView.vue') },
     { path: '/recept/ny', name: 'new', component: () => import('./views/RecipeEditView.vue') },
+    { path: '/recept/importera', name: 'import', component: () => import('./views/ImportView.vue') },
     { path: '/recept/:id', name: 'recipe', component: () => import('./views/RecipeView.vue'), props: true },
     {
       path: '/recept/:id/redigera',

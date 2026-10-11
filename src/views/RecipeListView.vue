@@ -47,21 +47,31 @@ const filtered = computed(() => {
         <wa-icon slot="start" name="plus"></wa-icon>
         {{ t('list.emptyAction') }}
       </wa-button>
+      <wa-button appearance="plain" @click="router.push({ name: 'import' })">
+        <wa-icon slot="start" name="file-import"></wa-icon>
+        {{ t('list.importAction') }}
+      </wa-button>
     </section>
 
     <template v-else>
       <div class="wa-split wa-gap-m">
         <h1 class="wa-heading-2xl">{{ t('list.title') }}</h1>
-        <wa-input
-          class="search"
-          :placeholder="t('list.search')"
-          :value="query"
-          with-clear
-          @input="query = inputValue($event)"
-          @wa-clear="query = ''"
-        >
-          <wa-icon slot="start" name="magnifying-glass"></wa-icon>
-        </wa-input>
+        <div class="wa-cluster wa-gap-s">
+          <wa-button appearance="plain" size="s" @click="router.push({ name: 'import' })">
+            <wa-icon slot="start" name="file-import"></wa-icon>
+            {{ t('list.importAction') }}
+          </wa-button>
+          <wa-input
+            class="search"
+            :placeholder="t('list.search')"
+            :value="query"
+            with-clear
+            @input="query = inputValue($event)"
+            @wa-clear="query = ''"
+          >
+            <wa-icon slot="start" name="magnifying-glass"></wa-icon>
+          </wa-input>
+        </div>
       </div>
 
       <p v-if="filtered?.length === 0" class="wa-color-text-quiet">{{ t('list.noMatches', { query }) }}</p>
@@ -85,7 +95,8 @@ const filtered = computed(() => {
 }
 
 .search {
-  inline-size: min(100%, 20rem);
+  inline-size: 20rem;
+  max-inline-size: 100%;
 }
 
 .recipe-grid {

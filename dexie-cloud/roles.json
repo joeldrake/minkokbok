@@ -1,0 +1,20 @@
+{
+  "roles": {
+    "member": {
+      "displayName": "Member",
+      "description": "Kan publicera egna recept och en egen profil i den publika realmen.",
+      "sortOrder": 1,
+      "permissions": {
+        "add": ["recipes", "profiles"]
+      }
+    },
+    "admin": {
+      "displayName": "Admin",
+      "description": "Kan publicera och hantera allt i den publika realmen, även dela ut roller.",
+      "sortOrder": 2,
+      "permissions": {
+        "manage": "*"
+      }
+    }
+  }
+}

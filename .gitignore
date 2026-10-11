@@ -4,5 +4,6 @@ dist
 .env.local
 dexie-cloud.json
 dexie-cloud.key
+.dev.vars
 *.log
 .DS_Store

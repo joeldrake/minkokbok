@@ -13,6 +13,7 @@ export const router = createRouter({
       component: () => import('./views/RecipeEditView.vue'),
       props: true,
     },
+    { path: '/admin', name: 'admin', component: () => import('./views/AdminView.vue') },
     { path: '/profil', name: 'profile', component: () => import('./views/ProfileView.vue') },
     // Publik sida ligger sist så att den inte fångar appens egna sökvägar.
     {

@@ -1,16 +1,220 @@
 /*
  * Min Kokboks tema ovanpå Web Awesome.
- * Basen sätts med klasser på <html> (wa-theme-default, wa-palette-default, wa-brand-orange).
- * Alla --wa-*-justeringar samlas här.
+ * Basen sätts med klasser på <html> (wa-theme-default, wa-palette-default, wa-brand-blue).
+ * Alla --wa-*-justeringar samlas här. Känslan: en inbunden kokbok med vävt
+ * linneomslag och offwhite papperssidor.
+ *
+ * Omslagets färg väljs med data-palette (se src/theme/palette.ts). Varje palett sätter:
+ *   --mk-cloth / --mk-cloth-dark  omslaget i ljust och mörkt läge
+ *   --mk-cloth-ink                text direkt på omslaget
+ *   --mk-cloth-button(-on)        knappar i sidhuvudet (valfritt, annars accentfärgen)
+ *   --mk-logo-*                   logotypens pärm, rygg och bokmärkesband
+ *   --wa-color-brand-*            accentfärgen
+ * Selektorerna gäller vilket element som helst, så färgprover kan visa en palett lokalt.
  */
 :root {
   --wa-font-family-heading: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --wa-border-radius-scale: 1.5;
+  --wa-border-radius-scale: 0.8;
   --wa-space-scale: 1.05;
+
+  --mk-font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+
+  /* Omslag (linne) och sidor (papper) */
+  --mk-linen: var(--mk-cloth);
+  --mk-on-linen: var(--mk-cloth-ink);
+  --mk-on-linen-quiet: color-mix(in oklab, var(--mk-on-linen) 78%, var(--mk-linen));
+  --mk-linen-button: var(--mk-cloth-button, var(--wa-color-brand-50));
+  --mk-linen-button-on: var(--mk-cloth-button-on, white);
+  --mk-paper: #fbf7ee;
+  --mk-paper-edge: #e6dcc8;
+  --mk-paper-shadow: 0 1px 2px rgb(23 45 70 / 0.12), 0 10px 30px -8px rgb(23 45 70 / 0.28);
+  --wa-color-brand: var(--wa-color-brand-50);
+  --wa-color-brand-on: white;
+
+  --wa-color-surface-raised: var(--mk-paper);
+  --wa-color-surface-default: var(--mk-paper);
+  --wa-color-surface-lowered: #f2ecdf;
+  --wa-color-surface-border: var(--mk-paper-edge);
+  --wa-color-text-normal: #1c2b3a;
+  --wa-color-text-quiet: #4d5761;
+
+  /* Vävd struktur: två korsade lager trådbrus plus ett fint rutnät */
+  --mk-weave:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='v'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85 .012' numOctaves='2' seed='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .85' numOctaves='2' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23v)' opacity='.55'/%3E%3Crect width='100%25' height='100%25' filter='url(%23h)' opacity='.45'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 0.18) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.1) 0 1px, transparent 1px 3px);
+  --mk-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.35'/%3E%3C/svg%3E");
 }
 
+:root.wa-dark {
+  --mk-linen: var(--mk-cloth-dark);
+  --mk-on-linen: var(--wa-color-text-normal);
+  --mk-linen-button: var(--wa-color-brand-50);
+  --mk-linen-button-on: white;
+  --mk-stitch: rgb(255 255 255 / 0.3);
+  --mk-paper: #2a2722;
+  --mk-paper-edge: #423c33;
+  --mk-paper-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -8px rgb(0 0 0 / 0.6);
+
+  --wa-color-surface-lowered: #23201c;
+  --wa-color-text-normal: #ece5d8;
+  --wa-color-text-quiet: #b3aa9a;
+}
+
+/* Paletter. Salvia är standard. */
+:root,
+[data-palette='salvia'] {
+  --mk-cloth: #aebfa6;
+  --mk-cloth-dark: #212b20;
+  --mk-cloth-ink: #22311f;
+  --mk-stitch: rgb(255 255 255 / 0.7);
+  --mk-logo-cover: #4f6b4a;
+  --mk-logo-spine: #3d5439;
+  --mk-logo-band: #b8462f;
+  --wa-color-brand-95: #eef3ec;
+  --wa-color-brand-90: #dce6d8;
+  --wa-color-brand-80: #b9ccb2;
+  --wa-color-brand-70: #97b18d;
+  --wa-color-brand-60: #74946b;
+  --wa-color-brand-50: #4f6b4a;
+  --wa-color-brand-40: #3f583b;
+  --wa-color-brand-30: #30452d;
+  --wa-color-brand-20: #233322;
+  --wa-color-brand-10: #172216;
+  --wa-color-brand-05: #0e160e;
+}
+
+[data-palette='naturlinne'] {
+  --mk-cloth: #d6ccb8;
+  --mk-cloth-dark: #2b261e;
+  --mk-cloth-ink: #3a2c1d;
+  --mk-stitch: rgb(255 255 255 / 0.75);
+  --mk-logo-cover: #6f5236;
+  --mk-logo-spine: #58402a;
+  --mk-logo-band: #a8432c;
+  --wa-color-brand-95: #f4efe6;
+  --wa-color-brand-90: #e8dfcf;
+  --wa-color-brand-80: #d2c1a4;
+  --wa-color-brand-70: #b99f78;
+  --wa-color-brand-60: #9c7f56;
+  --wa-color-brand-50: #7a5c3a;
+  --wa-color-brand-40: #654a2e;
+  --wa-color-brand-30: #4f3923;
+  --wa-color-brand-20: #3a2a1a;
+  --wa-color-brand-10: #251a10;
+  --wa-color-brand-05: #160f09;
+}
+
+[data-palette='duvbla'] {
+  --mk-cloth: #a7b8c6;
+  --mk-cloth-dark: #1e2731;
+  --mk-cloth-ink: #1f2b36;
+  --mk-stitch: rgb(255 255 255 / 0.7);
+  --mk-logo-cover: #4b6276;
+  --mk-logo-spine: #3b5062;
+  --mk-logo-band: #b8462f;
+  --wa-color-brand-95: #edf1f5;
+  --wa-color-brand-90: #dbe3eb;
+  --wa-color-brand-80: #b7c6d4;
+  --wa-color-brand-70: #93a9bd;
+  --wa-color-brand-60: #6f8ca5;
+  --wa-color-brand-50: #4b6276;
+  --wa-color-brand-40: #3b5062;
+  --wa-color-brand-30: #2d3e4d;
+  --wa-color-brand-20: #212e39;
+  --wa-color-brand-10: #151e26;
+  --wa-color-brand-05: #0d1318;
+}
+
+[data-palette='marin'] {
+  --mk-cloth: #2b4058;
+  --mk-cloth-dark: #172231;
+  --mk-cloth-ink: #f3ead6;
+  --mk-cloth-button: #f3ead6;
+  --mk-cloth-button-on: #1a3550;
+  --mk-stitch: rgb(220 200 150 / 0.55);
+  --mk-logo-cover: #3f6f9c;
+  --mk-logo-spine: #2f5a85;
+  --mk-logo-band: #c49a52;
+  --wa-color-brand-95: #edf2f7;
+  --wa-color-brand-90: #dbe5ef;
+  --wa-color-brand-80: #b5cde2;
+  --wa-color-brand-70: #8eb1d0;
+  --wa-color-brand-60: #6894bd;
+  --wa-color-brand-50: #3f6f9c;
+  --wa-color-brand-40: #2f5a85;
+  --wa-color-brand-30: #24476a;
+  --wa-color-brand-20: #1a3550;
+  --wa-color-brand-10: #112437;
+  --wa-color-brand-05: #0a1724;
+}
+
+[data-palette='vinrod'] {
+  --mk-cloth: #6b2a33;
+  --mk-cloth-dark: #2a1519;
+  --mk-cloth-ink: #f3e6d2;
+  --mk-cloth-button: #f3e6d2;
+  --mk-cloth-button-on: #572029;
+  --mk-stitch: rgb(225 195 140 / 0.55);
+  --mk-logo-cover: #9a3d48;
+  --mk-logo-spine: #712a34;
+  --mk-logo-band: #c49a52;
+  --wa-color-brand-95: #f7ecec;
+  --wa-color-brand-90: #efd9da;
+  --wa-color-brand-80: #dfb3b6;
+  --wa-color-brand-70: #cc8b90;
+  --wa-color-brand-60: #b2636b;
+  --wa-color-brand-50: #8a3540;
+  --wa-color-brand-40: #712a34;
+  --wa-color-brand-30: #572029;
+  --wa-color-brand-20: #3f171e;
+  --wa-color-brand-10: #280e13;
+  --wa-color-brand-05: #18080b;
+}
+
+/* Färgprover inuti sidan visar mörkt läges omslag när det är aktivt */
+:root.wa-dark [data-palette] {
+  --mk-cloth: var(--mk-cloth-dark);
+}
+
+html {
+  background-color: var(--mk-linen);
+}
+
+/* Omslaget: vävt linne bakom allt */
 wa-page {
   --menu-width: auto;
+  background: var(--mk-weave), var(--mk-linen);
+  background-blend-mode: soft-light, soft-light, soft-light, normal;
+}
+
+/* Sidhuvudet som en stygnad kant på omslaget */
+wa-page::part(header) {
+  background:
+    linear-gradient(90deg, var(--mk-stitch) 60%, transparent 0) left 0 bottom 0.4rem / 0.75rem 1.5px repeat-x,
+    var(--mk-weave),
+    var(--mk-linen);
+  background-blend-mode: normal, soft-light, soft-light, soft-light, normal;
+  box-shadow: 0 1px 0 rgb(23 45 70 / 0.12);
+}
+
+.app-header {
+  color: var(--mk-on-linen);
+  --wa-color-brand-fill-loud: var(--mk-linen-button);
+  --wa-color-brand-on-loud: var(--mk-linen-button-on);
+}
+
+.app-header wa-button:is([appearance='plain'], [appearance='outlined']) {
+  --wa-color-on-quiet: var(--mk-on-linen);
+  --wa-color-border-loud: var(--mk-on-linen-quiet);
+}
+
+/* Rubriker och text som ligger direkt på omslaget, utanför pappret */
+.page-content:not(.narrow) > :is(h1, h2, p, header),
+.page-content:not(.narrow) > .wa-split > :is(h1, h2) {
+  --wa-color-text-normal: var(--mk-on-linen);
+  --wa-color-text-quiet: var(--mk-on-linen-quiet);
+  color: var(--wa-color-text-normal);
 }
 
 /* Sidans innehåll: centrerad, läsvänlig bredd */
@@ -24,6 +228,24 @@ wa-page {
   max-inline-size: 44rem;
 }
 
+/* Smala sidor (recept, formulär) ligger på ett pappersark */
+.page-content.narrow,
+.paper {
+  padding: clamp(var(--wa-space-l), 5vw, var(--wa-space-3xl));
+  background: var(--mk-grain), var(--mk-paper);
+  background-blend-mode: soft-light, normal;
+  border: 1px solid var(--mk-paper-edge);
+  border-radius: var(--wa-border-radius-s);
+  box-shadow: var(--mk-paper-shadow);
+}
+
+/* Kort ser ut som små receptkort i papper */
+wa-card:not([appearance]) {
+  background: var(--mk-grain), var(--mk-paper);
+  background-blend-mode: soft-light, normal;
+  box-shadow: var(--mk-paper-shadow);
+}
+
 /* Rubriker med varmare typsnitt */
 h1,
 h2,
@@ -35,4 +257,51 @@ h3 {
 a.plain-link {
   color: inherit;
   text-decoration: none;
+}
+
+/*
+ * Appkänsla på mobilen
+ */
+html {
+  /* iOS förstorar annars texten när telefonen vänds */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Ingen grå blixt när man trycker */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allt man trycker på: ingen dubbeltrycks-zoom eller fördröjning (nypa-zoom fungerar fortfarande) */
+:is(a, button, label, summary, select, input, textarea, [role='button'], [tabindex]:not([tabindex='-1'])),
+:is(wa-button, wa-dropdown, wa-dropdown-item, wa-switch, wa-select, wa-option, wa-input, wa-textarea, wa-tag) {
+  touch-action: manipulation;
+}
+
+/* Knappar och sidhuvud beter sig som appens kontroller: ingen textmarkering eller långtrycksmeny */
+:is(button, [role='button'], wa-button, wa-dropdown-item, wa-switch, wa-tag),
+.app-header {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Notch, Dynamic Island och hemindikator. Sidhuvudet ligger under statusfältet (black-translucent). */
+wa-page::part(header) {
+  padding-block-start: env(safe-area-inset-top, 0px);
+}
+
+wa-page {
+  padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
+}
+
+wa-page > main {
+  padding-block-end: env(safe-area-inset-bottom, 0px);
+}
+
+/* Installerad på hemskärmen */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  html,
+  body {
+    /* Inget gummiband eller dra-för-att-ladda-om när man scrollar förbi kanten */
+    overscroll-behavior: none;
+  }
 }

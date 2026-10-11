@@ -39,39 +39,29 @@ const filtered = computed(() => {
       <wa-spinner></wa-spinner>
     </div>
 
-    <section v-else-if="recipes.length === 0" class="empty wa-stack wa-gap-l wa-align-items-center wa-text-center">
-      <wa-icon name="box-open" class="empty-icon"></wa-icon>
+    <section v-else-if="recipes.length === 0" class="empty paper wa-stack wa-gap-l wa-align-items-center wa-text-center">
+      <wa-icon name="book-open" class="empty-icon"></wa-icon>
       <h1 class="wa-heading-xl">{{ t('list.emptyTitle') }}</h1>
       <p class="wa-body-l wa-color-text-quiet">{{ t('list.emptyText') }}</p>
       <wa-button variant="brand" size="l" @click="router.push({ name: 'new' })">
         <wa-icon slot="start" name="plus"></wa-icon>
         {{ t('list.emptyAction') }}
       </wa-button>
-      <wa-button appearance="plain" @click="router.push({ name: 'import' })">
-        <wa-icon slot="start" name="file-import"></wa-icon>
-        {{ t('list.importAction') }}
-      </wa-button>
     </section>
 
     <template v-else>
       <div class="wa-split wa-gap-m">
         <h1 class="wa-heading-2xl">{{ t('list.title') }}</h1>
-        <div class="wa-cluster wa-gap-s">
-          <wa-button appearance="plain" size="s" @click="router.push({ name: 'import' })">
-            <wa-icon slot="start" name="file-import"></wa-icon>
-            {{ t('list.importAction') }}
-          </wa-button>
-          <wa-input
-            class="search"
-            :placeholder="t('list.search')"
-            :value="query"
-            with-clear
-            @input="query = inputValue($event)"
-            @wa-clear="query = ''"
-          >
-            <wa-icon slot="start" name="magnifying-glass"></wa-icon>
-          </wa-input>
-        </div>
+        <wa-input
+          class="search"
+          :placeholder="t('list.search')"
+          :value="query"
+          with-clear
+          @input="query = inputValue($event)"
+          @wa-clear="query = ''"
+        >
+          <wa-icon slot="start" name="magnifying-glass"></wa-icon>
+        </wa-input>
       </div>
 
       <p v-if="filtered?.length === 0" class="wa-color-text-quiet">{{ t('list.noMatches', { query }) }}</p>

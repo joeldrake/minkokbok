@@ -1,9 +1,17 @@
 import Dexie from 'dexie';
 import dexieCloud, { type DexieCloudTable } from 'dexie-cloud-addon';
 import type { Profile, Recipe } from './types';
+import { watchSyncRejections } from './syncRejections';
 
 /** Realm som alla, även utloggade besökare, kan läsa. */
 export const PUBLIC_REALM = 'rlm-public';
+
+/**
+ * Roller i den publika realmen. De definieras i dexie-cloud/roles.json och delas ut
+ * med en medlemsrad i rlm-public. Konton utan roll kan bara läsa det publika.
+ */
+export const ROLES = { member: 'member', admin: 'admin' } as const;
+export type Role = (typeof ROLES)[keyof typeof ROLES];
 
 const databaseUrl = import.meta.env.VITE_DEXIE_CLOUD_URL as string | undefined;
 
@@ -21,6 +29,7 @@ db.version(1).stores({
 });
 
 if (databaseUrl) {
+  watchSyncRejections(databaseUrl);
   db.cloud.configure({
     databaseUrl,
     requireAuth: false,
@@ -28,3 +37,7 @@ if (databaseUrl) {
     customLoginGui: true,
   });
 }
+
+// Öppna direkt. Dexie öppnar annars först vid första frågan, och innan dess läser
+// Dexie Cloud inte in den sparade inloggningen: currentUser står kvar på isLoading.
+db.open().catch((error) => console.error('Kunde inte öppna databasen', error));

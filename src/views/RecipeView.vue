@@ -11,7 +11,7 @@ import { useCurrentUser } from '../composables/useCurrentUser';
 const props = defineProps<{ id: string }>();
 const { t } = useI18n();
 const router = useRouter();
-const { isLoggedIn, profile } = useCurrentUser();
+const { isLoggedIn, profile, canPublish } = useCurrentUser();
 
 const recipe = useLiveQuery(
   async () => (await db.recipes.get(props.id)) ?? null,
@@ -92,12 +92,13 @@ async function onDelete() {
       <wa-card v-if="isOwner && cloudEnabled" appearance="filled">
         <wa-switch
           :checked="isPublic(recipe)"
-          :disabled="!isLoggedIn || !profile"
+          :disabled="!isLoggedIn || !canPublish || !profile"
           @change="onPublicChange"
         >
           {{ t('recipe.public') }}
           <span slot="hint">
             <template v-if="!isLoggedIn">{{ t('recipe.publicNeedsLogin') }}</template>
+            <template v-else-if="!canPublish">{{ t('recipe.publicNeedsRole') }}</template>
             <template v-else-if="!profile">
               <RouterLink :to="{ name: 'profile' }">{{ t('recipe.publicNeedsProfile') }}</RouterLink>
             </template>
@@ -169,6 +170,12 @@ async function onDelete() {
     grid-template-columns: minmax(14rem, 1fr) 2fr;
     align-items: start;
   }
+}
+
+.ingredients,
+.steps {
+  font-family: var(--mk-font-serif);
+  font-size: 1.0625rem;
 }
 
 .ingredients {

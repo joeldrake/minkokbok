@@ -114,6 +114,15 @@ function onAfterHide(event: Event) {
           {{ te(`login.${type}.cancel`) ? t(`login.${type}.cancel`) : t('login.cancel') }}
         </wa-button>
       </div>
+
+      <wa-callout v-if="te(`login.${type}.why.title`)" variant="neutral">
+        <wa-icon slot="icon" name="circle-info"></wa-icon>
+        <strong>{{ t(`login.${type}.why.title`) }}</strong>
+        <ul class="why">
+          <li>{{ t(`login.${type}.why.devices`) }}</li>
+          <li>{{ t(`login.${type}.why.localRecipes`) }}</li>
+        </ul>
+      </wa-callout>
     </form>
   </wa-dialog>
 </template>
@@ -130,6 +139,11 @@ function onAfterHide(event: Event) {
 
 .intro {
   margin: 0;
+}
+
+.why {
+  margin: var(--wa-space-2xs) 0 0;
+  padding-inline-start: 1.25em;
 }
 
 .option-icon {

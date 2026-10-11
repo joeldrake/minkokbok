@@ -5,10 +5,12 @@ import { useRouter } from 'vue-router';
 import { db, PUBLIC_REALM } from '../db';
 import { useCurrentUser } from '../composables/useCurrentUser';
 import { inputValue } from '../utils';
+import { syncRejections } from '../db/syncRejections';
+import PalettePicker from '../components/PalettePicker.vue';
 
 const { t } = useI18n();
 const router = useRouter();
-const { isLoggedIn, profile } = useCurrentUser();
+const { isLoggedIn, isLoading, profile, canPublish } = useCurrentUser();
 
 // Sökvägar som appen själv använder kan inte bli användarnamn.
 const RESERVED = new Set(['recept', 'profil', 'logga-in', 'om', 'api', 'admin', 'installningar']);
@@ -18,6 +20,7 @@ const host = location.host;
 const form = reactive({ username: '', displayName: '', bio: '' });
 const error = ref('');
 const saved = ref(false);
+const saving = ref(false);
 
 watch(
   profile,
@@ -41,10 +44,22 @@ async function onSubmit() {
     error.value = t('profile.usernameTaken');
     return;
   }
+  const rejectionsBefore = syncRejections.value.length;
   const data = { username, displayName: form.displayName.trim() || username, bio: form.bio.trim() || undefined };
   if (profile.value) await db.profiles.update(profile.value.id, data);
   else await db.profiles.add({ ...data, realmId: PUBLIC_REALM });
-  saved.value = true;
+  // Vänta på att servern tagit emot ändringen innan vi säger att den är sparad.
+  saving.value = true;
+  try {
+    await db.cloud.sync({ wait: true, purpose: 'push' });
+  } catch {
+    // Offline eller nätverksfel: ändringen ligger kvar lokalt och skickas vid nästa synk.
+  } finally {
+    saving.value = false;
+  }
+  const rejected = syncRejections.value.slice(rejectionsBefore).some((r) => r.table === 'profiles');
+  if (rejected) error.value = t('profile.rejected');
+  else saved.value = true;
 }
 </script>
 
@@ -52,9 +67,21 @@ async function onSubmit() {
   <div class="page-content narrow wa-stack wa-gap-l">
     <h1 class="wa-heading-2xl">{{ t('profile.title') }}</h1>
 
-    <wa-callout v-if="!isLoggedIn" variant="neutral">
+    <wa-spinner v-if="isLoading"></wa-spinner>
+
+    <wa-callout v-else-if="!isLoggedIn" variant="neutral">
       <wa-icon slot="icon" name="circle-info"></wa-icon>
-      {{ t('profile.needsLogin') }}
+      <div class="wa-stack wa-gap-s">
+        <span>{{ t('profile.needsLogin') }}</span>
+        <div>
+          <wa-button variant="brand" size="s" @click="db.cloud.login()">{{ t('nav.login') }}</wa-button>
+        </div>
+      </div>
+    </wa-callout>
+
+    <wa-callout v-else-if="!canPublish" variant="neutral">
+      <wa-icon slot="icon" name="circle-info"></wa-icon>
+      {{ t('profile.needsRole') }}
     </wa-callout>
 
     <form v-else class="wa-stack wa-gap-l" @submit.prevent="onSubmit">
@@ -78,7 +105,7 @@ async function onSubmit() {
       <wa-callout v-if="saved" variant="success" size="s">{{ t('profile.saved') }}</wa-callout>
 
       <div class="wa-cluster wa-gap-s">
-        <wa-button type="submit" variant="brand">{{ t('profile.save') }}</wa-button>
+        <wa-button type="submit" variant="brand" :loading="saving">{{ t('profile.save') }}</wa-button>
         <wa-button
           v-if="profile"
           appearance="plain"
@@ -88,5 +115,8 @@ async function onSubmit() {
         </wa-button>
       </div>
     </form>
+
+    <wa-divider></wa-divider>
+    <PalettePicker />
   </div>
 </template>

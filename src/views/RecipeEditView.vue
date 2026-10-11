@@ -81,7 +81,13 @@ async function onSubmit() {
 <template>
   <div class="page-content narrow">
     <form v-if="loaded" class="wa-stack wa-gap-l" @submit.prevent="onSubmit">
-      <h1 class="wa-heading-2xl">{{ id ? t('recipe.editTitle') : t('recipe.newTitle') }}</h1>
+      <div class="wa-split wa-gap-m">
+        <h1 class="wa-heading-2xl">{{ id ? t('recipe.editTitle') : t('recipe.newTitle') }}</h1>
+        <wa-button v-if="!id" appearance="plain" size="s" @click="router.push({ name: 'import' })">
+          <wa-icon slot="start" name="file-import"></wa-icon>
+          {{ t('recipe.importAction') }}
+        </wa-button>
+      </div>
 
       <wa-input
         :label="t('recipe.title')"

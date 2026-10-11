@@ -25,11 +25,13 @@ import '@awesome.me/webawesome/dist/components/textarea/textarea.js';
 
 import './styles/theme.css';
 import { applyPalette } from './theme/palette';
+import { applyTextSize } from './theme/textSize';
 
 import App from './App.vue';
 import { i18n } from './i18n';
 import { router } from './router';
 
 applyPalette();
+applyTextSize();
 
 createApp(App).use(i18n).use(router).mount('#app');

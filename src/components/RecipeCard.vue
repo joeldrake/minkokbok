@@ -26,10 +26,10 @@ const hasFooter = computed(
     <wa-card class="recipe-card">
       <RecipeCover v-if="recipe.cover" slot="media" :cover="recipe.cover" />
       <div class="wa-stack wa-gap-xs">
-        <h2 class="wa-heading-m">{{ recipe.title }}</h2>
+        <h2 class="title wa-heading-m">{{ recipe.title }}</h2>
         <p v-if="recipe.description" class="description wa-body-s wa-color-text-quiet">{{ recipe.description }}</p>
       </div>
-      <div v-if="hasFooter" slot="footer" class="wa-cluster wa-gap-s wa-caption-m wa-color-text-quiet">
+      <div v-if="hasFooter" slot="footer" class="footer wa-cluster wa-gap-s wa-caption-m wa-color-text-quiet">
         <span v-if="totalMinutes(recipe)" class="wa-cluster wa-gap-2xs">
           <wa-icon name="clock"></wa-icon>{{ t('recipe.totalTime', { n: totalMinutes(recipe) }) }}
         </span>
@@ -59,6 +59,16 @@ const hasFooter = computed(
 .card-link:focus-visible .recipe-card {
   translate: 0 calc(-1 * var(--wa-space-3xs));
   box-shadow: var(--wa-shadow-m);
+}
+
+/* Storlekarna följer inställningen "Större text", se styles/theme.css */
+.title {
+  font-size: var(--mk-card-title);
+}
+
+.description,
+.footer {
+  font-size: var(--mk-card-text);
 }
 
 .description {

@@ -81,23 +81,25 @@ const ingredientGroups = computed(() => {
       <header class="wa-stack wa-gap-m">
         <RecipeCover v-if="recipe.cover" :cover="recipe.cover" class="cover" />
         <div class="title-row">
-          <h1 class="wa-heading-3xl">{{ recipe.title }}</h1>
-          <wa-copy-button
-            v-if="publicUrl"
-            class="quiet-button"
-            :value="publicUrl"
-            :copy-label="t('recipe.copyLink')"
-            :success-label="t('recipe.linkCopied')"
-          ></wa-copy-button>
-          <wa-button
-            v-if="isOwner"
-            class="quiet-button"
-            appearance="plain"
-            size="s"
-            @click="router.push({ name: 'edit', params: { id: recipe.id } })"
-          >
-            <wa-icon name="pen" :label="t('recipe.edit')"></wa-icon>
-          </wa-button>
+          <h1 class="title wa-heading-3xl">{{ recipe.title }}</h1>
+          <div v-if="publicUrl || isOwner" class="title-actions">
+            <wa-copy-button
+              v-if="publicUrl"
+              class="quiet-button"
+              :value="publicUrl"
+              :copy-label="t('recipe.copyLink')"
+              :success-label="t('recipe.linkCopied')"
+            ></wa-copy-button>
+            <wa-button
+              v-if="isOwner"
+              class="quiet-button"
+              appearance="plain"
+              size="s"
+              @click="router.push({ name: 'edit', params: { id: recipe.id } })"
+            >
+              <wa-icon name="pen" :label="t('recipe.edit')"></wa-icon>
+            </wa-button>
+          </div>
         </div>
         <p v-if="recipe.description" class="wa-body-l wa-color-text-quiet lead">{{ recipe.description }}</p>
         <div class="wa-cluster wa-gap-xs">
@@ -138,7 +140,7 @@ const ingredientGroups = computed(() => {
         </section>
       </div>
 
-      <p v-if="recipe.source?.url" class="wa-caption-m wa-color-text-quiet">
+      <p v-if="recipe.source?.url" class="source wa-caption-m wa-color-text-quiet">
         {{ t('recipe.source') }}: <a :href="recipe.source.url" target="_blank" rel="noopener">{{ recipe.source.url }}</a>
       </p>
     </article>
@@ -156,14 +158,51 @@ const ingredientGroups = computed(() => {
   color: var(--wa-color-text-quiet);
 }
 
+/*
+ * Titeln tar den plats som finns och knapparna står kvar till höger, centrerade mot första
+ * raden. På mobil avstavas långa ord (sidan har lang="sv") i stället för att trycka ut knapparna.
+ */
 .title-row {
+  --title-size: var(--wa-font-size-3xl);
   display: flex;
   align-items: flex-start;
-  gap: var(--wa-space-s);
+  gap: var(--wa-space-2xs);
 }
 
-.title-row h1 {
+.title {
   flex: 1;
+  min-width: 0;
+  font-size: var(--title-size);
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+/* Lika hög som titelns första rad, så att knapparna hamnar mitt för den */
+.title-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  block-size: calc(var(--title-size) * var(--wa-line-height-condensed));
+}
+
+@media (width < 40rem) {
+  .title-row {
+    --title-size: var(--wa-font-size-2xl);
+  }
+
+  .title {
+    hyphens: auto;
+    /* Minst fyra tecken på var sida om bindestrecket, så att det inte blir "saff-" */
+    hyphenate-limit-chars: 8 4 4;
+    -webkit-hyphenate-limit-before: 4;
+    -webkit-hyphenate-limit-after: 4;
+  }
+}
+
+@media (width < 22.5rem) {
+  .title-row {
+    --title-size: var(--wa-font-size-xl);
+  }
 }
 
 .quiet-button {
@@ -186,6 +225,11 @@ const ingredientGroups = computed(() => {
   margin: 0;
 }
 
+/* Långa käll-URL:er radbryts var som helst i stället för att sidoscrolla */
+.source {
+  overflow-wrap: anywhere;
+}
+
 .recipe-body {
   display: grid;
   gap: var(--wa-space-2xl);
@@ -201,7 +245,7 @@ const ingredientGroups = computed(() => {
 .ingredients,
 .steps {
   font-family: var(--mk-font-serif);
-  font-size: 1.0625rem;
+  font-size: var(--mk-recipe-text);
 }
 
 .ingredients {

@@ -168,7 +168,9 @@ export default {
   },
   appearance: {
     title: "Utseende",
-    hint: "Välj färg på kokbokens omslag. Valet sparas i den här webbläsaren.",
+    hint: "Välj färg på kokbokens omslag. Valen sparas i den här webbläsaren.",
+    largeText: "Större text",
+    largeTextHint: "Gör ingredienser, steg och receptkorten lättare att läsa, t.ex. vid spisen.",
     palettes: {
       salvia: "Salvia",
       naturlinne: "Naturlinne",

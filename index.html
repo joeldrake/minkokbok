@@ -23,6 +23,8 @@
       try {
         const palette = localStorage.getItem('mk-palette');
         if (palette) document.documentElement.dataset.palette = palette;
+        // Större text (se src/theme/textSize.ts)
+        if (localStorage.getItem('mk-text-size') === 'large') document.documentElement.dataset.textSize = 'large';
       } catch {}
       // Följ systemets mörkt/ljust-läge
       if (matchMedia('(prefers-color-scheme: dark)').matches) {

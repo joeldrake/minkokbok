@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { palette, PALETTES, setPalette } from '../theme/palette';
+import { setTextSize, textSize } from '../theme/textSize';
 import BrandLogo from './BrandLogo.vue';
 
 const { t } = useI18n();
@@ -25,6 +26,14 @@ const { t } = useI18n();
         <span class="name wa-body-s">{{ t(`appearance.palettes.${p}`) }}</span>
       </label>
     </div>
+    <wa-switch
+      class="text-size"
+      :checked="textSize === 'large'"
+      @change="setTextSize(($event.target as HTMLInputElement).checked ? 'large' : 'normal')"
+    >
+      {{ t('appearance.largeText') }}
+      <span slot="hint">{{ t('appearance.largeTextHint') }}</span>
+    </wa-switch>
   </fieldset>
 </template>
 
@@ -42,6 +51,10 @@ const { t } = useI18n();
 
 .hint {
   margin: 0;
+}
+
+.text-size {
+  margin-block-start: var(--wa-space-m);
 }
 
 .options {

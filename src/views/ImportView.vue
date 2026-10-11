@@ -2,9 +2,12 @@
 import { computed, ref, toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { db } from '../db';
-import { createRecipe, type RecipeDraft } from '../db/recipes';
+import { cloudEnabled, db } from '../db';
+import { createRecipe, setPendingDraft, type RecipeDraft } from '../db/recipes';
 import { parseMarkdownRecipe } from '../db/importMarkdown';
+import { importRecipeFromUrl } from '../db/importUrl';
+import { useCurrentUser } from '../composables/useCurrentUser';
+import { inputValue } from '../utils';
 
 type ItemStatus = 'ready' | 'duplicate' | 'error' | 'imported';
 
@@ -17,6 +20,7 @@ interface ImportItem {
 
 const { t } = useI18n();
 const router = useRouter();
+const { user, isLoggedIn } = useCurrentUser();
 const fileInput = ref<HTMLInputElement>();
 const items = ref<ImportItem[]>([]);
 const dragging = ref(false);
@@ -29,6 +33,33 @@ const ERROR_KEYS: Record<string, string> = {
   'not-a-recipe': 'import.errorNotRecipe',
   'missing-title': 'import.errorMissingTitle',
 };
+
+const URL_ERROR_KEYS: Record<string, string> = {
+  'invalid-url': 'import.url.errorInvalid',
+  'not-logged-in': 'import.url.needsLogin',
+  'fetch-failed': 'import.url.errorFetch',
+  'no-recipe': 'import.url.errorNoRecipe',
+  'missing-title': 'import.errorMissingTitle',
+};
+
+const pageUrl = ref('');
+const fetching = ref(false);
+const urlError = ref('');
+
+/** Hämtar receptet och öppnar det som ett nytt recept, så att det kan granskas innan det sparas. */
+async function onImportUrl() {
+  if (!pageUrl.value.trim()) return;
+  fetching.value = true;
+  urlError.value = '';
+  try {
+    setPendingDraft(await importRecipeFromUrl(pageUrl.value, user.value?.accessToken));
+    router.push({ name: 'new' });
+  } catch (e) {
+    urlError.value = t(URL_ERROR_KEYS[(e as Error).message] ?? 'import.url.errorFetch');
+  } finally {
+    fetching.value = false;
+  }
+}
 
 async function addFiles(files: File[]) {
   const own = await db.recipes.filter((r) => !r.owner || r.owner === db.cloud.currentUserId).toArray();
@@ -95,20 +126,49 @@ const STATUS_VARIANT: Record<ItemStatus, string> = {
 <template>
   <div class="page-content narrow wa-stack wa-gap-l">
     <h1 class="wa-heading-2xl">{{ t('import.title') }}</h1>
-    <p class="wa-color-text-quiet">{{ t('import.intro') }}</p>
 
-    <div
-      class="dropzone wa-stack wa-gap-s wa-align-items-center wa-text-center"
-      :class="{ dragging }"
-      @dragover.prevent="dragging = true"
-      @dragleave="dragging = false"
-      @drop.prevent="onDrop"
-    >
-      <wa-icon name="file-arrow-up" class="dropzone-icon"></wa-icon>
-      <p>{{ t('import.dropHint') }}</p>
-      <wa-button appearance="outlined" @click="fileInput?.click()">{{ t('import.chooseFiles') }}</wa-button>
-      <input ref="fileInput" type="file" accept=".md,.markdown,text/markdown" multiple class="file-input" @change="onFileChange" />
-    </div>
+    <section class="wa-stack wa-gap-m">
+      <h2 class="wa-heading-l">{{ t('import.url.title') }}</h2>
+      <p class="wa-color-text-quiet">{{ t('import.url.intro') }}</p>
+      <form v-if="cloudEnabled && isLoggedIn" class="wa-cluster wa-gap-s wa-align-items-end" @submit.prevent="onImportUrl">
+        <wa-input
+          inputmode="url"
+          class="url-input"
+          :label="t('import.url.label')"
+          :placeholder="t('import.url.placeholder')"
+          :value="pageUrl"
+          required
+          @input="pageUrl = inputValue($event)"
+        ></wa-input>
+        <wa-button type="submit" variant="brand" :loading="fetching">{{ t('import.url.submit') }}</wa-button>
+      </form>
+      <wa-callout v-else variant="neutral" size="s">
+        <wa-icon slot="icon" name="circle-info"></wa-icon>
+        {{ t('import.url.needsLogin') }}
+      </wa-callout>
+      <wa-callout v-if="urlError" variant="danger" size="s">
+        <wa-icon slot="icon" name="triangle-exclamation"></wa-icon>
+        {{ urlError }}
+      </wa-callout>
+    </section>
+
+    <section class="wa-stack wa-gap-m">
+      <h2 class="wa-heading-l">{{ t('import.markdown.title') }}</h2>
+      <p class="wa-color-text-quiet">{{ t('import.markdown.intro') }}</p>
+
+      <div
+        class="dropzone wa-stack wa-gap-s wa-align-items-center wa-text-center"
+        :class="{ dragging }"
+        @dragover.prevent="dragging = true"
+        @dragleave="dragging = false"
+        @drop.prevent="onDrop"
+      >
+        <wa-icon name="file-arrow-up" class="dropzone-icon"></wa-icon>
+        <p>{{ t('import.dropHint') }}</p>
+        <wa-button appearance="outlined" @click="fileInput?.click()">{{ t('import.chooseFiles') }}</wa-button>
+        <input ref="fileInput" type="file" accept=".md,.markdown,text/markdown" multiple class="file-input" @change="onFileChange" />
+      </div>
+    </section>
 
     <template v-if="items.length">
       <ul class="items wa-stack wa-gap-s">
@@ -141,6 +201,10 @@ const STATUS_VARIANT: Record<ItemStatus, string> = {
 </template>
 
 <style scoped>
+.url-input {
+  flex: 1 1 16rem;
+}
+
 .dropzone {
   padding: var(--wa-space-2xl) var(--wa-space-l);
   border: var(--wa-border-width-m) dashed var(--wa-color-neutral-border-normal);

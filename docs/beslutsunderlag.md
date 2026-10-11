@@ -20,7 +20,7 @@ Min Kokbok är en webbapp där man samlar sina recept, når dem snabbt från mob
 | Hosting           | Cloudflare (Workers static assets + Worker för `/api/*`) | Beslutat, ej deployat                         |
 | Publika adresser  | `/[användarnamn]/[slug]` med förhandsbild vid delning     | Byggt                                         |
 | Installation      | PWA (manifest, ikoner, iOS-startskärmar)                 | Byggt                                         |
-| AI-import         | Claude API via Cloudflare Worker                         | Uppskjutet. Markdown-import finns under tiden |
+| Import            | schema.org/JSON-LD via Worker, Claude API för resten     | Webbsida och Markdown byggt, AI uppskjuten    |
 | Språk             | Svenska, men all UI-text via `vue-i18n` från start       | Beslutat, byggt                               |
 
 ## MVP-omfång
@@ -31,7 +31,7 @@ Min Kokbok är en webbapp där man samlar sina recept, når dem snabbt från mob
 | 2   | Spara, visa, redigera och ta bort recept i sitt konto                                       | Klart, inklusive omslag.                                                                      |
 | 3   | Fungerar bra på mobil och desktop och synkar snabbt mellan enheter                          | Mobilanpassat och installerbart som PWA. Synk mellan enheter återstår att verifiera i spiken. |
 | 4   | Recept är privata som standard. Valda recept kan visas publikt på `minkokbok.<tld>/[konto]` | Klart i appen. Domän ej vald.                                                                 |
-| 5   | Import från skärmdump, foto, webbsida eller Instagram-bildtext                              | Uppskjutet, kräver Claude API-konto. Import av Markdown-filer finns under tiden.              |
+| 5   | Import från skärmdump, foto, webbsida eller Instagram-bildtext                              | Webbsidor med schema.org-data och Markdown-filer klart. Övrigt kräver Claude API-konto.       |
 
 ## Beslut och motiveringar
 
@@ -133,13 +133,22 @@ Ett Claude Pro-abonnemang kan inte driva en app. Det krävs ett API-konto som be
 
 | Källa                               | Metod                                                                                                                                                |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Webbsida                            | Läs i första hand receptdata i schema.org/JSON-LD (gratis och exakt). Claude bara som reserv.                                                        |
+| Webbsida                            | Byggt för sidor med schema.org/JSON-LD (gratis och exakt), se nedan. Claude blir reserv för sidor utan receptdata.                                   |
 | Skärmdump / foto / handskriven lapp | Bild till Claude med structured outputs enligt receptschemat.                                                                                        |
 | Instagram                           | Automatisk hämtning är skör (Meta begränsar). Användaren klistrar in bildtexten eller tar en skärmdump. På Android kan en PWA ta emot "Dela" direkt. |
 
 Uppskattad kostnad per import: från cirka 0,001 USD (Haiku 5.5) till cirka 0,03 USD (Opus 5.5). Börja med en kapabel modell för handskrift och testa sedan om en billigare räcker för enklare källor.
 
 **Under tiden:** man kan importera recept från Markdown-filer (`/recept/importera`). Importen visar vilka filer som är redo, redan finns eller hoppas över innan något sparas.
+
+### Import från webbsida (byggt)
+
+Receptsajter beskriver sina recept med [schema.org/Recipe](https://schema.org/Recipe) i `<script type="application/ld+json">`, eftersom Google kräver det för att visa recept i sökresultaten. Webbläsaren får inte läsa andra sajter (CORS), så Workern hämtar sidan (`GET /api/import?url=`) och skickar tillbaka JSON-LD-blocken. Klienten tolkar dem (`src/db/importJsonLd.ts`) och öppnar receptet i redigeringsvyn, så att man granskar det innan det sparas. Receptbilden hämtas via `GET /api/import/image?url=` och krymps som en uppladdad bild.
+
+- Endpointen kräver inloggning, men inte medlemsroll. Den följer bara `http(s)` på standardportar, nekar IP-adresser och interna värdnamn, kontrollerar varje omdirigering och har storleks- och tidsgränser.
+- `author` saknar eget fält och läggs i beskrivningen som "Recept från …". Steg i `HowToSection` plattas ut, eftersom steg inte har grupper. Finns bara `totalTime` hamnar den i tillagningstid.
+- Testat mot ICA, Arla och MatHem. Sajter som blockerar okända klienter (t.ex. Allrecipes) går inte att hämta.
+- Min Kokboks egna publika receptsidor har också schema.org/Recipe, inlagd av Workern tillsammans med Open Graph-taggarna (`worker/jsonLd.ts`). Recepten kan då visas som recept i Google och importeras till andra appar. Textfälten html-kodas, eftersom importerare tar bort det som ser ut som taggar. Ingrediensgrupper följer inte med, eftersom schemat saknar sådana.
 
 ### Språk: svenska via vue-i18n
 
@@ -194,8 +203,8 @@ interface Profile {
 
 ## Nästa steg
 
-Klart: projektet är uppsatt, Dexie Cloud-databasen är skapad, grundflödet för recept och den publika sidan är byggda, och inloggning, roller, admin, omslag, Markdown-import, PWA och publika receptadresser med förhandsbilder finns på plats.
+Klart: projektet är uppsatt, Dexie Cloud-databasen är skapad, grundflödet för recept och den publika sidan är byggda, och inloggning, roller, admin, omslag, Markdown-import, import från webbsidor, PWA och publika receptadresser med förhandsbilder finns på plats.
 
 1. Välj och registrera domän.
-2. Skaffa Claude API-konto och bygg AI-import.
+2. Skaffa Claude API-konto och bygg AI-import (bild, foto, Instagram, och webbsidor utan schema.org-data).
 3. Byt till Vite+.

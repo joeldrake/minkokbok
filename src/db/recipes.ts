@@ -13,6 +13,22 @@ export function emptyDraft(): RecipeDraft {
   return { title: '', ingredients: [], steps: [], tags: [] };
 }
 
+let pendingDraft: RecipeDraft | undefined;
+
+/**
+ * Lämnar över ett importerat utkast till vyn för nytt recept, så att man kan granska det
+ * innan det sparas. Ligger bara i minnet, eftersom omslaget kan vara en Blob.
+ */
+export function setPendingDraft(draft: RecipeDraft) {
+  pendingDraft = draft;
+}
+
+export function takePendingDraft(): RecipeDraft | undefined {
+  const draft = pendingDraft;
+  pendingDraft = undefined;
+  return draft;
+}
+
 export async function createRecipe(draft: RecipeDraft): Promise<string> {
   const now = Date.now();
   const slug = uniqueSlug(draft.title, await takenSlugs(db.cloud.currentUserId));

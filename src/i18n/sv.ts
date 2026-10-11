@@ -59,7 +59,7 @@ export default {
     deleteConfirmText:
       '"{title}" tas bort från alla dina enheter. Det går inte att ångra.',
     newTitle: "Nytt recept",
-    importAction: "Importera från markdown",
+    importAction: "Importera",
     editTitle: "Redigera recept",
     notFound: "Receptet hittades inte",
     notFoundText:
@@ -94,8 +94,24 @@ export default {
   },
   import: {
     title: "Importera recept",
-    intro:
-      "Ladda upp recept som markdown-filer, t.ex. från en gammal blogg. Varje fil blir ett recept som du kan redigera efteråt.",
+    url: {
+      title: "Från en webbsida",
+      intro:
+        "Klistra in adressen till ett recept, t.ex. från en receptsajt. Du får granska receptet innan det sparas.",
+      label: "Adress till receptet",
+      placeholder: "https://…",
+      submit: "Hämta recept",
+      needsLogin: "Logga in för att kunna hämta recept från webbsidor.",
+      errorInvalid: "Det ser inte ut som en webbadress. Kontrollera att den är rätt.",
+      errorFetch: "Sidan gick inte att hämta. Kontrollera adressen eller försök igen senare.",
+      errorNoRecipe:
+        "Hittade inget recept på sidan. Sidan behöver ha receptdata enligt schema.org, vilket de flesta receptsajter har.",
+    },
+    markdown: {
+      title: "Från markdown-filer",
+      intro:
+        "Ladda upp recept som markdown-filer, t.ex. från en gammal blogg. Varje fil blir ett recept som du kan redigera efteråt.",
+    },
     dropHint: "Släpp .md-filer här",
     chooseFiles: "Välj filer",
     ingredientCount: "inga ingredienser | {n} ingrediens | {n} ingredienser",

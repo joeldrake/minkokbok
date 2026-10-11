@@ -8,6 +8,7 @@ import {
   deleteRecipe,
   isPublic,
   setRecipePublic,
+  takePendingDraft,
   updateRecipe,
   type RecipeDraft,
 } from '../db/recipes';
@@ -51,29 +52,35 @@ const emojiSuggestions = computed(() =>
 const loaded = ref(!props.id);
 const saving = ref(false);
 
+function fillForm(recipe: RecipeDraft) {
+  Object.assign(form, {
+    title: recipe.title,
+    description: recipe.description ?? '',
+    servings: recipe.servings?.toString() ?? '',
+    prepMinutes: recipe.prepMinutes?.toString() ?? '',
+    cookMinutes: recipe.cookMinutes?.toString() ?? '',
+    ingredients: formatIngredients(recipe.ingredients),
+    steps: formatSteps(recipe.steps),
+    tags: recipe.tags.join(', '),
+    sourceUrl: recipe.source?.url ?? '',
+  });
+  cover.value = recipe.cover;
+}
+
 watch(
   () => props.id,
   async (id) => {
     if (!id) return;
     const recipe = await db.recipes.get(id);
-    if (recipe) {
-      Object.assign(form, {
-        title: recipe.title,
-        description: recipe.description ?? '',
-        servings: recipe.servings?.toString() ?? '',
-        prepMinutes: recipe.prepMinutes?.toString() ?? '',
-        cookMinutes: recipe.cookMinutes?.toString() ?? '',
-        ingredients: formatIngredients(recipe.ingredients),
-        steps: formatSteps(recipe.steps),
-        tags: recipe.tags.join(', '),
-        sourceUrl: recipe.source?.url ?? '',
-      });
-      cover.value = recipe.cover;
-    }
+    if (recipe) fillForm(recipe);
     loaded.value = true;
   },
   { immediate: true },
 );
+
+// Ett recept som importerats från en webbsida granskas här innan det sparas.
+const imported = props.id ? undefined : takePendingDraft();
+if (imported) fillForm(imported);
 
 /**
  * Kopia utan Vues reaktiva proxyer, som IndexedDB inte kan klona (DataCloneError).

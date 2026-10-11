@@ -4,6 +4,7 @@
  */
 
 import type { Env } from './index';
+import { jsonLdScript, recipeJsonLd, type JsonLdSource } from './jsonLd';
 
 const SITE_NAME = 'Min Kokbok';
 // Måste stämma med OG_WIDTH och OG_HEIGHT i src/cover/ogImage.ts
@@ -22,19 +23,17 @@ interface PublicProfile {
 /** Blob som Dexie Cloud har lagt i sin bloblagring, eller (om den är liten) skickar inline. */
 type StoredBlob = { _bt: string; ref: string; ct?: string } | { $t: 'Blob'; v: string };
 
-interface PublicRecipe {
+interface PublicRecipe extends JsonLdSource {
   id: string;
-  title: string;
-  description?: string;
   slug?: string;
   slugHistory?: string[];
   ogImage?: StoredBlob;
-  updatedAt: number;
   realmId: string;
 }
 
 /**
- * Appens index.html med titel och Open Graph-taggar för receptet på /[användarnamn]/[slug].
+ * Appens index.html med titel, Open Graph-taggar och schema.org-data för receptet på
+ * /[användarnamn]/[slug].
  * Ger null när sökvägen inte är ett publikt recept, så att den serveras som vanligt.
  * En gammal slug skickas vidare till den aktuella.
  */
@@ -80,10 +79,17 @@ export async function publicRecipePage(request: Request, url: URL, env: Env): Pr
       return `<${tag} ${attrs.join(' ')} />`;
     })
     .join('\n    ');
+  const jsonLd = jsonLdScript(
+    recipeJsonLd(recipe, {
+      url: canonical,
+      imageUrl: recipe.ogImage ? image.url : undefined,
+      author: { name: profile.displayName || username, url: new URL(`/${username}`, url).toString() },
+    }),
+  );
 
   const response = new HTMLRewriter()
     .on('title', { element: (el) => void el.setInnerContent(title) })
-    .on('head', { element: (el) => void el.append(`    ${html}\n  `, { html: true }) })
+    .on('head', { element: (el) => void el.append(`    ${html}\n    ${jsonLd}\n  `, { html: true }) })
     .transform(page);
   const headers = new Headers(response.headers);
   // Kort cache, så att en ny titel eller bild syns snart i nya förhandsvisningar.

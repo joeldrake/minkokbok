@@ -4,10 +4,15 @@
  * Adminfunktionerna (lista konton, sätta roller, ta bort konton) kräver Dexie Clouds
  * REST-API med klientnyckeln, som aldrig får skickas till webbläsaren.
  *
- * Publika receptsidor (/[användarnamn]/[slug]) får Open Graph-taggar inlagda i HTML:en,
- * eftersom de som hämtar förhandsvisningar (Facebook, Slack, iMessage …) inte kör JavaScript.
+ * Receptimport från webbsidor (/api/import) är öppen för alla inloggade, se import.ts.
+ *
+ * Publika receptsidor (/[användarnamn]/[slug]) får Open Graph-taggar och schema.org-data inlagda
+ * i HTML:en, eftersom de som hämtar förhandsvisningar (Facebook, Slack, iMessage …) och
+ * sökmotorer inte alltid kör JavaScript.
  */
 
+import { HttpError, json } from './http';
+import { importImage, importPage } from './import';
 import { ogImageResponse, publicRecipePage } from './og';
 
 export interface Env {
@@ -66,6 +71,13 @@ export default {
 };
 
 async function handleApi(request: Request, url: URL, env: Env): Promise<Response> {
+  if (url.pathname.startsWith('/api/import') && request.method === 'GET') {
+    await requireUser(request, env);
+    if (url.pathname === '/api/import') return importPage(url);
+    if (url.pathname === '/api/import/image') return importImage(url);
+    throw new HttpError(404, 'Hittades inte');
+  }
+
   const caller = await requireAdmin(request, env);
 
   if (url.pathname === '/api/admin/users' && request.method === 'GET') {
@@ -109,17 +121,21 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
 }
 
 /**
- * Kontrollerar anroparens Dexie Cloud-token och att hen är admin.
+ * Kontrollerar anroparens Dexie Cloud-token och ger användarens id.
  * Tokenet valideras genom att Dexie Cloud självt får svara på ett anrop med det.
  */
-async function requireAdmin(request: Request, env: Env): Promise<string> {
+async function requireUser(request: Request, env: Env): Promise<string> {
   const token = /^Bearer (.+)$/.exec(request.headers.get('Authorization') ?? '')?.[1];
   if (!token) throw new HttpError(401, 'Inte inloggad');
 
   const check = await fetch(`${env.DEXIE_DB_URL}/my/members`, { headers: { Authorization: `Bearer ${token}` } });
   if (!check.ok) throw new HttpError(401, 'Ogiltig eller utgången inloggning');
+  return jwtSubject(token);
+}
 
-  const userId = jwtSubject(token);
+/** Som requireUser, men kräver dessutom admin-rollen. */
+async function requireAdmin(request: Request, env: Env): Promise<string> {
+  const userId = await requireUser(request, env);
   const members = (await publicMembers(env)).filter((m) => m.userId === userId);
   if (roleOf(members) !== 'admin') throw new HttpError(403, 'Kräver admin-behörighet');
   return userId;
@@ -212,17 +228,4 @@ async function dexie(env: Env, path: string, init: RequestInit = {}): Promise<un
   if (!res.ok) throw new Error(`Dexie Cloud ${init.method ?? 'GET'} ${path} svarade ${res.status}: ${await res.text()}`);
   const text = await res.text();
   return text ? JSON.parse(text) : null;
-}
-
-class HttpError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
-
-function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 }

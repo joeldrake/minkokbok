@@ -12,6 +12,9 @@ import {
   type RecipeDraft,
 } from '../db/recipes';
 import { formatIngredients, formatSteps, parseIngredients, parseSteps } from '../db/parse';
+import type { Cover } from '../db/types';
+import { suggestEmojis } from '../cover/emoji';
+import CoverEditor from '../components/CoverEditor.vue';
 import { inputValue } from '../utils';
 import { useLiveQuery } from '../composables/useLiveQuery';
 import { useCurrentUser } from '../composables/useCurrentUser';
@@ -41,6 +44,10 @@ const form = reactive({
   tags: '',
   sourceUrl: '',
 });
+const cover = ref<Cover>();
+const emojiSuggestions = computed(() =>
+  suggestEmojis({ title: form.title, ingredients: parseIngredients(form.ingredients) }),
+);
 const loaded = ref(!props.id);
 const saving = ref(false);
 
@@ -61,11 +68,20 @@ watch(
         tags: recipe.tags.join(', '),
         sourceUrl: recipe.source?.url ?? '',
       });
+      cover.value = recipe.cover;
     }
     loaded.value = true;
   },
   { immediate: true },
 );
+
+/**
+ * Kopia utan Vues reaktiva proxyer, som IndexedDB inte kan klona (DataCloneError).
+ * En Blob görs aldrig reaktiv, så den kan följa med som den är.
+ */
+function plainCover(cover: Cover): Cover {
+  return cover.kind === 'emoji' ? { ...cover, emojis: [...cover.emojis] } : { ...cover };
+}
 
 function toNumber(value: string): number | undefined {
   const n = Number.parseInt(value, 10);
@@ -97,6 +113,8 @@ async function onSubmit() {
     steps: parseSteps(form.steps),
     tags: form.tags.split(',').map((s) => s.trim()).filter(Boolean),
     source: form.sourceUrl.trim() ? { kind: 'url', url: form.sourceUrl.trim() } : { kind: 'manual' },
+    // undefined tar bort ett tidigare omslag när receptet uppdateras
+    cover: cover.value && plainCover(cover.value),
   };
   try {
     const id = props.id ?? (await createRecipe(draft));
@@ -188,6 +206,8 @@ async function onSubmit() {
         :value="form.tags"
         @input="form.tags = inputValue($event)"
       ></wa-input>
+
+      <CoverEditor v-model="cover" :suggestions="emojiSuggestions" />
 
       <wa-input
         type="url"

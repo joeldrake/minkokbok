@@ -317,10 +317,6 @@ wa-page:has(> [slot='footer']) > main {
   color: var(--mk-on-linen);
 }
 
-.app-footer .footer-quiet {
-  color: var(--mk-on-linen-quiet);
-}
-
 .app-footer a {
   color: inherit;
   text-decoration-color: var(--mk-on-linen-quiet);

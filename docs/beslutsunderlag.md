@@ -68,7 +68,7 @@ Alternativet var Supabase (Postgres + Auth + Storage) med egen synk. Det ger mer
 
 - [ ] Inloggning och synk mellan mobil och desktop.
 - [ ] Att publika recept i `rlm-public` kan läsas utan inloggning på `/[konto]`.
-- [ ] Bilder: Dexie Cloud har inbyggt blob-stöd (`blobMode: 'eager' | 'lazy'`). Verifiera storlek, kostnad och prestanda för receptbilder.
+- [ ] Bilder: omslagsbilder sparas som `Blob` på receptet (beslutat 2026-10-11). De krymps i webbläsaren till max 1600 px (WebP, eller JPEG i Safari), och Dexie Cloud laddar upp dem till sin bloblagring vid synk (`blobMode: 'eager'`, standard). Verifiera kostnad, och att utloggade besökare kan se bilder på publika recept. Reservplan: R2 via Workern.
 - [ ] Skalning av publika sidor: den publika realmen synkas i sin helhet till alla klienter. Det fungerar i början, men med många användare bör `/[konto]` i stället hämta data via Dexie Clouds REST-API från en Worker.
 - [ ] Unika kontonamn (`/[konto]`). Dexie Cloud har inga globalt unika fält, så det kan kräva en liten serverfunktion.
 - [ ] Prismodell när antalet användare växer.

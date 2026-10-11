@@ -1,7 +1,6 @@
 export default {
   app: {
     name: "Min Kokbok",
-    tagline: "Dina recept, alltid nära till hands",
   },
   nav: {
     myRecipes: "Mina recept",
@@ -75,6 +74,22 @@ export default {
     publicNeedsProfile:
       "Välj ett användarnamn i din profil för att få en publik sida.",
     isPublic: "Publikt",
+  },
+  cover: {
+    title: "Omslag",
+    intro:
+      "Lägg till en egen bild, t.ex. från kamerarullen. Eller skapa ett glatt omslag av emojis: vi föreslår emojis utifrån titeln och ingredienserna, och du kan ändra dem som du vill.",
+    uploadImage: "Ladda upp bild",
+    replaceImage: "Byt bild",
+    imageError: "Bilden kunde inte läsas. Prova en annan bild, t.ex. JPEG eller PNG.",
+    create: "Skapa emoji-omslag",
+    emojis: "Emojis",
+    emojisHint: "Skriv eller klistra in upp till {max} emojis, eller välj bland förslagen.",
+    suggestions: "Förslag",
+    add: "Lägg till {emoji}",
+    color: "Färg",
+    shuffle: "Blanda om",
+    remove: "Ta bort omslag",
   },
   import: {
     title: "Importera recept",

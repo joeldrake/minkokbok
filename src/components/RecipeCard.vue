@@ -1,21 +1,29 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { Recipe } from '../db/types';
 import { isPublic } from '../db/recipes';
 import { totalMinutes } from '../utils';
+import RecipeCover from './RecipeCover.vue';
 
-defineProps<{ recipe: Recipe & { realmId?: string }; showPublicTag?: boolean }>();
+const props = defineProps<{ recipe: Recipe & { realmId?: string }; showPublicTag?: boolean }>();
 const { t } = useI18n();
+
+// Utan innehåll renderas ingen sidfot, så kortet inte får en tom rad längst ner.
+const hasFooter = computed(
+  () => totalMinutes(props.recipe) > 0 || !!props.recipe.servings || (props.showPublicTag && isPublic(props.recipe)),
+);
 </script>
 
 <template>
   <RouterLink :to="{ name: 'recipe', params: { id: recipe.id } }" class="plain-link card-link">
     <wa-card class="recipe-card">
+      <RecipeCover v-if="recipe.cover" slot="media" :cover="recipe.cover" />
       <div class="wa-stack wa-gap-xs">
         <h2 class="wa-heading-m">{{ recipe.title }}</h2>
         <p v-if="recipe.description" class="description wa-body-s wa-color-text-quiet">{{ recipe.description }}</p>
       </div>
-      <div slot="footer" class="wa-cluster wa-gap-s wa-caption-m wa-color-text-quiet">
+      <div v-if="hasFooter" slot="footer" class="wa-cluster wa-gap-s wa-caption-m wa-color-text-quiet">
         <span v-if="totalMinutes(recipe)" class="wa-cluster wa-gap-2xs">
           <wa-icon name="clock"></wa-icon>{{ t('recipe.totalTime', { n: totalMinutes(recipe) }) }}
         </span>

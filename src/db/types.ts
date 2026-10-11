@@ -1,3 +1,5 @@
+import type { Palette } from '../theme/palette';
+
 export interface Ingredient {
   amount?: string;
   unit?: string;
@@ -10,6 +12,28 @@ export interface Ingredient {
 export interface Step {
   text: string;
 }
+
+/**
+ * Omslag ritat av emojis på en tygfärg. Utspridningen räknas fram ur seed,
+ * så omslaget ser likadant ut överallt och "Blanda" bara byter seed.
+ */
+export interface EmojiCover {
+  kind: 'emoji';
+  emojis: string[];
+  palette: Palette;
+  seed: number;
+}
+
+/**
+ * Egen bild, krympt i webbläsaren innan den sparas. Dexie Cloud laddar upp
+ * Blob-fält till sin bloblagring vid synk, så synken skickar bara en referens.
+ */
+export interface PhotoCover {
+  kind: 'photo';
+  image: Blob;
+}
+
+export type Cover = EmojiCover | PhotoCover;
 
 export type RecipeSourceKind = 'manual' | 'url' | 'image' | 'instagram';
 
@@ -24,6 +48,7 @@ export interface Recipe {
   steps: Step[];
   tags: string[];
   source?: { kind: RecipeSourceKind; url?: string };
+  cover?: Cover;
   createdAt: number;
   updatedAt: number;
 }

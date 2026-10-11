@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { db } from '../db';
 import type { Ingredient } from '../db/types';
 import { useLiveQuery } from '../composables/useLiveQuery';
+import RecipeCover from '../components/RecipeCover.vue';
 
 const props = defineProps<{ id: string }>();
 const { t } = useI18n();
@@ -47,6 +48,7 @@ const ingredientGroups = computed(() => {
 
     <article v-else class="wa-stack wa-gap-xl">
       <header class="wa-stack wa-gap-m">
+        <RecipeCover v-if="recipe.cover" :cover="recipe.cover" class="cover" />
         <div class="title-row">
           <h1 class="wa-heading-3xl">{{ recipe.title }}</h1>
           <wa-button
@@ -135,6 +137,11 @@ const ingredientGroups = computed(() => {
 .edit-button:hover,
 .edit-button:focus-within {
   opacity: 1;
+}
+
+.cover {
+  border-radius: var(--wa-border-radius-l);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
 }
 
 .lead {

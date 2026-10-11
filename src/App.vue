@@ -75,10 +75,7 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
       <div class="app-footer-inner wa-split wa-gap-l">
         <div class="wa-cluster wa-gap-s">
           <BrandLogo class="footer-logo" />
-          <div class="wa-stack wa-gap-3xs">
-            <span class="footer-name">{{ t('app.name') }}</span>
-            <span class="wa-caption-m footer-quiet">{{ t('app.tagline') }}</span>
-          </div>
+          <span class="footer-name">{{ t('app.name') }}</span>
         </div>
         <nav class="wa-cluster wa-gap-l wa-caption-m">
           <RouterLink :to="{ name: 'import' }">{{ t('nav.importRecipes') }}</RouterLink>

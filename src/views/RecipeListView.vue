@@ -51,7 +51,12 @@ const filtered = computed(() => {
 
     <template v-else>
       <div class="wa-split wa-gap-m">
-        <h1 class="wa-heading-2xl">{{ t('list.title') }}</h1>
+        <div class="wa-cluster wa-gap-s">
+          <h1 class="wa-heading-2xl">{{ t('list.title') }}</h1>
+          <wa-button variant="brand" pill :title="t('nav.newRecipe')" @click="router.push({ name: 'new' })">
+            <wa-icon name="plus" :label="t('nav.newRecipe')"></wa-icon>
+          </wa-button>
+        </div>
         <wa-input
           class="search"
           :placeholder="t('list.search')"
@@ -67,13 +72,6 @@ const filtered = computed(() => {
       <p v-if="filtered?.length === 0" class="wa-color-text-quiet">{{ t('list.noMatches', { query }) }}</p>
       <div class="wa-grid wa-gap-l recipe-grid">
         <RecipeCard v-for="recipe in filtered" :key="recipe.id" :recipe="recipe" show-public-tag />
-      </div>
-
-      <div class="wa-cluster wa-justify-content-center">
-        <wa-button variant="brand" @click="router.push({ name: 'new' })">
-          <wa-icon slot="start" name="plus"></wa-icon>
-          {{ t('nav.newRecipe') }}
-        </wa-button>
       </div>
     </template>
   </div>
@@ -97,6 +95,7 @@ const filtered = computed(() => {
 }
 
 .recipe-grid {
-  --min-column-size: 16rem;
+  /* auto-fill i stället för wa-grids auto-fit, så att ett ensamt kort inte fyller hela raden */
+  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
 }
 </style>

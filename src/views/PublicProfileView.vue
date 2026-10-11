@@ -49,6 +49,7 @@ const data = useLiveQuery(
 
 <style scoped>
 .recipe-grid {
-  --min-column-size: 16rem;
+  /* auto-fill i stället för wa-grids auto-fit, så att ett ensamt kort inte fyller hela raden */
+  grid-template-columns: repeat(auto-fill, minmax(min(16rem, 100%), 1fr));
 }
 </style>

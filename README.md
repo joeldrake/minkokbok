@@ -1,4 +1,4 @@
-# Receptlådan
+# Min Kokbok
 
 Dina recept, alltid nära till hands. En local-first webbapp där du sparar recept, synkar mellan mobil och dator och delar utvalda recept på din egen publika sida.
 

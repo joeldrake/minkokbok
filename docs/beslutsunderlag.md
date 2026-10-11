@@ -1,14 +1,14 @@
-# Receptlådan – beslutsunderlag
+# Min Kokbok – beslutsunderlag
 
 *Senast uppdaterad: 2026-10-11*
 
-Receptlådan är en webbapp där man samlar sina recept, når dem snabbt från mobil och dator, och kan visa utvalda recept publikt på sin egen sida. Appen ska kännas varm och enkel att använda och främja matlagningsglädje.
+Min Kokbok är en webbapp där man samlar sina recept, når dem snabbt från mobil och dator, och kan visa utvalda recept publikt på sin egen sida. Appen ska kännas varm och enkel att använda och främja matlagningsglädje.
 
 ## Sammanfattning av beslut
 
 | Område | Beslut | Status |
 |---|---|---|
-| Namn | **Receptlådan** (tekniskt: `receptladan`) | Beslutat |
+| Namn | **Min Kokbok** (tekniskt: `minkokbok`) | Beslutat |
 | Frontend | Vue 3 + TypeScript | Beslutat |
 | Byggverktyg | Vite 8 nu, **Vite+** när 1.x har mognat några veckor | Beslutat |
 | Designsystem | Web Awesome 3 | Beslutat |
@@ -23,18 +23,20 @@ Receptlådan är en webbapp där man samlar sina recept, når dem snabbt från m
 1. Inloggning.
 2. Spara, visa, redigera och ta bort recept i sitt konto.
 3. Fungerar bra på mobil och desktop, och synkar snabbt mellan enheter.
-4. Recept är privata som standard. Valda recept kan visas publikt på `receptladan.se/[konto]`.
+4. Recept är privata som standard. Valda recept kan visas publikt på `minkokbok.<tld>/[konto]` (domän ej vald).
 5. Import av recept från skärmdump, foto (även handskrivna lappar), webbsida eller Instagram-bildtext. *Byggs efter grundappen, kräver Claude API-konto.*
 
 ## Beslut och motiveringar
 
-### Namn: Receptlådan
+### Namn: Min Kokbok
 
-Bilden av den gamla receptlådan med kort och lappar ger värme och nostalgi, och knyter an till fotoimporten av handskrivna lappar. Den fungerar även för den publika sidan: `receptladan.se/anna` = Annas receptlåda. "MinaRecept" valdes bort eftersom "mina" blir fel ur besökarens perspektiv, namnet är generiskt och krockar med ett äldre projekt.
+Appen hette först Receptlådan, men `receptladan.se` var redan upptaget av en annan receptapp. Därför bytte vi till Min Kokbok. Namnet är personligt och lätt att förstå. Det passar en app där man samlar sina egna recept.
 
-Tekniska identifierare (mapp, repo, npm, Cloudflare-projekt, domän) skrivs `receptladan` utan å, eftersom GitHub, Cloudflare och npm inte hanterar å i namn. Med å skrivs det bara i gränssnitt och marknadsföring.
+Tekniska identifierare (repo, npm, Cloudflare-projekt, Dexie-databas, domän) skrivs `minkokbok`. I gränssnitt och marknadsföring skrivs det "Min Kokbok".
 
-**Att göra:** kontrollera och registrera domän (`receptladan.se`, ev. `.com`).
+Avvägning: precis som med "MinaRecept" blir "min" lite fel ur besökarens perspektiv på den publika sidan (`minkokbok.<tld>/anna`). Det har vi accepterat.
+
+**Att göra:** välja domän. `minkokbok.se`, `minkokbok.com` och `min-kokbok.se` är registrerade (kontrollerat 2026-10-11, `.se` går ut 2027-03-28). `minkokbok.nu` såg ledig ut.
 
 ### Frontend: Vue 3 + Vite (→ Vite+)
 
@@ -131,6 +133,6 @@ interface Profile {      // ligger i rlm-public, läses av /[konto]
 2. Skapa en Dexie Cloud-databas (`npx dexie-cloud create`) och gå igenom spike-listan ovan.
 3. Bygg grundflödet: lista, visa, skapa och redigera recept.
 4. Publik sida `/[konto]`.
-5. Första deploy till Cloudflare på standardadressen `receptladan.<konto>.workers.dev`. Egen domän registreras senare.
+5. Första deploy till Cloudflare på standardadressen `minkokbok.<konto>.workers.dev`. Egen domän registreras senare.
 6. Skaffa Claude API-konto och bygg AI-import.
 7. Byt till Vite+.

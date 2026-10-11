@@ -1,6 +1,6 @@
 export default {
   app: {
-    name: 'Receptlådan',
+    name: 'Min Kokbok',
     tagline: 'Dina recept, alltid nära till hands',
   },
   nav: {
@@ -17,7 +17,7 @@ export default {
   list: {
     title: 'Mina recept',
     search: 'Sök bland recepten',
-    emptyTitle: 'Receptlådan är tom än så länge',
+    emptyTitle: 'Kokboken är tom än så länge',
     emptyText: 'Spara ditt första recept: mormors köttbullar, veckans soppa eller den där kakan alla frågar efter.',
     emptyAction: 'Lägg till ett recept',
     importAction: 'Importera från markdown',

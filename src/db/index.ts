@@ -10,7 +10,7 @@ const databaseUrl = import.meta.env.VITE_DEXIE_CLOUD_URL as string | undefined;
 /** Utan Dexie Cloud-URL körs appen helt lokalt, utan inloggning och synk. */
 export const cloudEnabled = Boolean(databaseUrl);
 
-export const db = new Dexie('receptladan', { addons: [dexieCloud] }) as Dexie & {
+export const db = new Dexie('minkokbok', { addons: [dexieCloud] }) as Dexie & {
   recipes: DexieCloudTable<Recipe, 'id'>;
   profiles: DexieCloudTable<Profile, 'id'>;
 };

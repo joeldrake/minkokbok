@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { cloudEnabled, db } from '../db';
-import { deleteRecipe, isPublic, setRecipePublic } from '../db/recipes';
+import { db } from '../db';
 import type { Ingredient } from '../db/types';
 import { useLiveQuery } from '../composables/useLiveQuery';
-import { useCurrentUser } from '../composables/useCurrentUser';
 
 const props = defineProps<{ id: string }>();
 const { t } = useI18n();
 const router = useRouter();
-const { isLoggedIn, profile, canPublish } = useCurrentUser();
 
 const recipe = useLiveQuery(
   async () => (await db.recipes.get(props.id)) ?? null,
@@ -33,23 +30,10 @@ const ingredientGroups = computed(() => {
   }
   return groups;
 });
-
-const publicUrl = computed(() => (profile.value ? `${location.host}/${profile.value.username}` : ''));
-const confirmDelete = ref(false);
-
-async function onPublicChange(event: Event) {
-  await setRecipePublic(props.id, (event.target as HTMLInputElement).checked);
-}
-
-async function onDelete() {
-  confirmDelete.value = false;
-  await deleteRecipe(props.id);
-  router.replace({ name: 'list' });
-}
 </script>
 
 <template>
-  <div class="page-content narrow">
+  <div class="page-content narrow recipe-paper">
     <div v-if="recipe === undefined" class="wa-stack wa-align-items-center">
       <wa-spinner></wa-spinner>
     </div>
@@ -63,7 +47,18 @@ async function onDelete() {
 
     <article v-else class="wa-stack wa-gap-xl">
       <header class="wa-stack wa-gap-m">
-        <h1 class="wa-heading-3xl">{{ recipe.title }}</h1>
+        <div class="title-row">
+          <h1 class="wa-heading-3xl">{{ recipe.title }}</h1>
+          <wa-button
+            v-if="isOwner"
+            class="edit-button"
+            appearance="plain"
+            size="s"
+            @click="router.push({ name: 'edit', params: { id } })"
+          >
+            <wa-icon name="pen" :label="t('recipe.edit')"></wa-icon>
+          </wa-button>
+        </div>
         <p v-if="recipe.description" class="wa-body-l wa-color-text-quiet lead">{{ recipe.description }}</p>
         <div class="wa-cluster wa-gap-xs">
           <wa-tag v-if="recipe.prepMinutes" appearance="filled" size="s">
@@ -77,35 +72,7 @@ async function onDelete() {
           </wa-tag>
           <wa-tag v-for="tag in recipe.tags" :key="tag" variant="brand" appearance="filled" size="s">{{ tag }}</wa-tag>
         </div>
-        <div v-if="isOwner" class="wa-cluster wa-gap-s">
-          <wa-button size="s" @click="router.push({ name: 'edit', params: { id } })">
-            <wa-icon slot="start" name="pen"></wa-icon>
-            {{ t('recipe.edit') }}
-          </wa-button>
-          <wa-button size="s" appearance="plain" variant="danger" @click="confirmDelete = true">
-            <wa-icon slot="start" name="trash"></wa-icon>
-            {{ t('recipe.delete') }}
-          </wa-button>
-        </div>
       </header>
-
-      <wa-card v-if="isOwner && cloudEnabled" appearance="filled">
-        <wa-switch
-          :checked="isPublic(recipe)"
-          :disabled="!isLoggedIn || !canPublish || !profile"
-          @change="onPublicChange"
-        >
-          {{ t('recipe.public') }}
-          <span slot="hint">
-            <template v-if="!isLoggedIn">{{ t('recipe.publicNeedsLogin') }}</template>
-            <template v-else-if="!canPublish">{{ t('recipe.publicNeedsRole') }}</template>
-            <template v-else-if="!profile">
-              <RouterLink :to="{ name: 'profile' }">{{ t('recipe.publicNeedsProfile') }}</RouterLink>
-            </template>
-            <template v-else>{{ t('recipe.publicHint', { url: publicUrl }) }}</template>
-          </span>
-        </wa-switch>
-      </wa-card>
 
       <div class="recipe-body">
         <section class="wa-stack wa-gap-m">
@@ -135,25 +102,39 @@ async function onDelete() {
         {{ t('recipe.source') }}: <a :href="recipe.source.url" target="_blank" rel="noopener">{{ recipe.source.url }}</a>
       </p>
     </article>
-
-    <wa-dialog
-      :label="t('recipe.deleteConfirmTitle')"
-      :open="confirmDelete"
-      @wa-after-hide="confirmDelete = false"
-    >
-      {{ t('recipe.deleteConfirmText', { title: recipe?.title }) }}
-      <div slot="footer" class="wa-cluster wa-gap-s">
-        <wa-button appearance="plain" @click="confirmDelete = false">{{ t('recipe.cancel') }}</wa-button>
-        <wa-button variant="danger" @click="onDelete">{{ t('recipe.delete') }}</wa-button>
-      </div>
-    </wa-dialog>
   </div>
 </template>
 
 <style scoped>
+/* Långa ord (t.ex. en titel) scrollar inuti pappret i stället för att spräcka sidan */
+.recipe-paper {
+  overflow-x: auto;
+}
+
 .big-icon {
   font-size: var(--wa-font-size-4xl);
   color: var(--wa-color-text-quiet);
+}
+
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wa-space-s);
+}
+
+.title-row h1 {
+  flex: 1;
+}
+
+.edit-button {
+  color: var(--wa-color-text-quiet);
+  opacity: 0.6;
+  transition: opacity var(--wa-transition-fast, 150ms);
+}
+
+.edit-button:hover,
+.edit-button:focus-within {
+  opacity: 1;
 }
 
 .lead {

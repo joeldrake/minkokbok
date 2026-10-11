@@ -11,6 +11,8 @@ export default {
     login: "Logga in",
     logout: "Logga ut",
     account: "Konto",
+    importRecipes: "Importera recept",
+    publicPage: "Min publika sida",
   },
   cloud: {
     rejected:

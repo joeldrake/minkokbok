@@ -68,6 +68,13 @@ const filtered = computed(() => {
       <div class="wa-grid wa-gap-l recipe-grid">
         <RecipeCard v-for="recipe in filtered" :key="recipe.id" :recipe="recipe" show-public-tag />
       </div>
+
+      <div class="wa-cluster wa-justify-content-center">
+        <wa-button variant="brand" @click="router.push({ name: 'new' })">
+          <wa-icon slot="start" name="plus"></wa-icon>
+          {{ t('nav.newRecipe') }}
+        </wa-button>
+      </div>
     </template>
   </div>
 </template>

@@ -231,7 +231,7 @@ wa-page::part(header) {
 /* Smala sidor (recept, formulär) ligger på ett pappersark */
 .page-content.narrow,
 .paper {
-  padding: clamp(var(--wa-space-l), 5vw, var(--wa-space-3xl));
+  padding: clamp(var(--wa-space-m), 5vw, var(--wa-space-3xl));
   background: var(--mk-grain), var(--mk-paper);
   background-blend-mode: soft-light, normal;
   border: 1px solid var(--mk-paper-edge);
@@ -294,7 +294,53 @@ wa-page {
 }
 
 wa-page > main {
-  padding-block-end: env(safe-area-inset-bottom, 0px);
+  padding-block-end: calc(var(--wa-space-3xl) + env(safe-area-inset-bottom, 0px));
+}
+
+/* Sidfoten: samma stygnade linnekant som sidhuvudet, fast upptill */
+wa-page::part(footer) {
+  padding-block-end: calc(var(--wa-space-l) + env(safe-area-inset-bottom, 0px));
+  background:
+    linear-gradient(90deg, var(--mk-stitch) 60%, transparent 0) left 0 top 0.4rem / 0.75rem 1.5px repeat-x,
+    var(--mk-weave),
+    var(--mk-linen);
+  background-blend-mode: normal, soft-light, soft-light, soft-light, normal;
+  box-shadow: 0 -1px 0 rgb(23 45 70 / 0.12);
+}
+
+/* När sidfoten finns ger den själv avslutningen nertill */
+wa-page:has(> [slot='footer']) > main {
+  padding-block-end: var(--wa-space-3xl);
+}
+
+.app-footer {
+  color: var(--mk-on-linen);
+}
+
+.app-footer .footer-quiet {
+  color: var(--mk-on-linen-quiet);
+}
+
+.app-footer a {
+  color: inherit;
+  text-decoration-color: var(--mk-on-linen-quiet);
+  text-underline-offset: 0.2em;
+}
+
+.app-footer a:hover {
+  text-decoration-color: currentColor;
+}
+
+/* Mobil: mindre linne runt pappret så att texten får plats */
+@media (width < 40rem) {
+  wa-page > main {
+    padding-block-start: var(--wa-space-m);
+    padding-inline: var(--wa-space-s);
+  }
+
+  wa-page > [slot='footer'] {
+    padding: var(--wa-space-l) var(--wa-space-m);
+  }
 }
 
 /* Installerad på hemskärmen */

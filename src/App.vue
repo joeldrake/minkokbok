@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { cloudEnabled, db } from './db';
 import { useCurrentUser } from './composables/useCurrentUser';
 import BrandLogo from './components/BrandLogo.vue';
@@ -9,7 +9,8 @@ import { clearSyncRejections, syncRejections } from './db/syncRejections';
 
 const { t } = useI18n();
 const router = useRouter();
-const { user, isLoggedIn, isLoading, isAdmin } = useCurrentUser();
+const route = useRoute();
+const { user, isLoggedIn, isLoading, isAdmin, profile } = useCurrentUser();
 
 function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
   const action = event.detail.item.value;
@@ -20,7 +21,7 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
 </script>
 
 <template>
-  <wa-page disable-navigation-toggle>
+  <wa-page disable-navigation-toggle disable-sticky="header">
     <header slot="header" class="app-header wa-split">
       <RouterLink :to="{ name: 'list' }" class="brand plain-link wa-cluster wa-gap-xs">
         <BrandLogo class="brand-logo" />
@@ -28,11 +29,6 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
       </RouterLink>
 
       <div class="wa-cluster wa-gap-s">
-        <wa-button variant="brand" size="s" @click="router.push({ name: 'new' })">
-          <wa-icon slot="start" name="plus"></wa-icon>
-          {{ t('nav.newRecipe') }}
-        </wa-button>
-
         <template v-if="cloudEnabled && !isLoading">
           <wa-dropdown v-if="isLoggedIn" placement="bottom-end" @wa-select="onAccountSelect">
             <wa-button slot="trigger" appearance="plain" size="s" with-caret>
@@ -75,6 +71,25 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
       <RouterView />
     </main>
 
+    <footer v-if="route.name === 'list'" slot="footer" class="app-footer">
+      <div class="app-footer-inner wa-split wa-gap-l">
+        <div class="wa-cluster wa-gap-s">
+          <BrandLogo class="footer-logo" />
+          <div class="wa-stack wa-gap-3xs">
+            <span class="footer-name">{{ t('app.name') }}</span>
+            <span class="wa-caption-m footer-quiet">{{ t('app.tagline') }}</span>
+          </div>
+        </div>
+        <nav class="wa-cluster wa-gap-l wa-caption-m">
+          <RouterLink :to="{ name: 'import' }">{{ t('nav.importRecipes') }}</RouterLink>
+          <RouterLink v-if="profile" :to="{ name: 'public', params: { username: profile.username } }">
+            {{ t('nav.publicPage') }}
+          </RouterLink>
+          <RouterLink v-if="isLoggedIn" :to="{ name: 'profile' }">{{ t('nav.profile') }}</RouterLink>
+        </nav>
+      </div>
+    </footer>
+
     <LoginDialog v-if="cloudEnabled" />
   </wa-page>
 </template>
@@ -97,6 +112,21 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
   inline-size: 2.25rem;
   block-size: 2.25rem;
   filter: drop-shadow(0 1px 1px rgb(23 45 70 / 0.25));
+}
+
+.app-footer-inner {
+  max-inline-size: 72rem;
+  margin-inline: auto;
+}
+
+.footer-logo {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+}
+
+.footer-name {
+  font-family: var(--wa-font-family-heading);
+  font-weight: var(--wa-font-weight-bold);
 }
 
 .local-notice,

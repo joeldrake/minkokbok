@@ -1,15 +1,33 @@
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { db } from '../db';
-import { createRecipe, updateRecipe, type RecipeDraft } from '../db/recipes';
+import { cloudEnabled, db } from '../db';
+import {
+  createRecipe,
+  deleteRecipe,
+  isPublic,
+  setRecipePublic,
+  updateRecipe,
+  type RecipeDraft,
+} from '../db/recipes';
 import { formatIngredients, formatSteps, parseIngredients, parseSteps } from '../db/parse';
 import { inputValue } from '../utils';
+import { useLiveQuery } from '../composables/useLiveQuery';
+import { useCurrentUser } from '../composables/useCurrentUser';
 
 const props = defineProps<{ id?: string }>();
 const { t } = useI18n();
 const router = useRouter();
+const { isLoggedIn, profile, canPublish } = useCurrentUser();
+
+// Publik-läget sparas direkt, oberoende av formuläret, så det läses live.
+const recipe = useLiveQuery(
+  async () => (props.id ? ((await db.recipes.get(props.id)) ?? null) : null),
+  () => props.id,
+);
+const publicUrl = computed(() => (profile.value ? `${location.host}/${profile.value.username}` : ''));
+const confirmDelete = ref(false);
 
 // Formuläret redigerar text. Den tolkas till strukturerad data när man sparar.
 const form = reactive({
@@ -52,6 +70,18 @@ watch(
 function toNumber(value: string): number | undefined {
   const n = Number.parseInt(value, 10);
   return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+async function onPublicChange(event: Event) {
+  if (!props.id) return;
+  await setRecipePublic(props.id, (event.target as HTMLInputElement).checked);
+}
+
+async function onDelete() {
+  if (!props.id) return;
+  confirmDelete.value = false;
+  await deleteRecipe(props.id);
+  router.replace({ name: 'list' });
 }
 
 async function onSubmit() {
@@ -166,11 +196,47 @@ async function onSubmit() {
         @input="form.sourceUrl = inputValue($event)"
       ></wa-input>
 
-      <div class="wa-cluster wa-gap-s">
-        <wa-button type="submit" variant="brand" :loading="saving">{{ t('recipe.save') }}</wa-button>
-        <wa-button appearance="plain" @click="router.back()">{{ t('recipe.cancel') }}</wa-button>
+      <wa-card v-if="recipe && cloudEnabled" appearance="filled">
+        <wa-switch
+          :checked="isPublic(recipe)"
+          :disabled="!isLoggedIn || !canPublish || !profile"
+          @change="onPublicChange"
+        >
+          {{ t('recipe.public') }}
+          <span slot="hint">
+            <template v-if="!isLoggedIn">{{ t('recipe.publicNeedsLogin') }}</template>
+            <template v-else-if="!canPublish">{{ t('recipe.publicNeedsRole') }}</template>
+            <template v-else-if="!profile">
+              <RouterLink :to="{ name: 'profile' }">{{ t('recipe.publicNeedsProfile') }}</RouterLink>
+            </template>
+            <template v-else>{{ t('recipe.publicHint', { url: publicUrl }) }}</template>
+          </span>
+        </wa-switch>
+      </wa-card>
+
+      <div class="wa-split wa-gap-s">
+        <div class="wa-cluster wa-gap-s">
+          <wa-button type="submit" variant="brand" :loading="saving">{{ t('recipe.save') }}</wa-button>
+          <wa-button appearance="plain" @click="router.back()">{{ t('recipe.cancel') }}</wa-button>
+        </div>
+        <wa-button v-if="id" appearance="plain" variant="danger" @click="confirmDelete = true">
+          <wa-icon slot="start" name="trash"></wa-icon>
+          {{ t('recipe.delete') }}
+        </wa-button>
       </div>
     </form>
+
+    <wa-dialog
+      :label="t('recipe.deleteConfirmTitle')"
+      :open="confirmDelete"
+      @wa-after-hide="confirmDelete = false"
+    >
+      {{ t('recipe.deleteConfirmText', { title: form.title }) }}
+      <div slot="footer" class="wa-cluster wa-gap-s">
+        <wa-button appearance="plain" @click="confirmDelete = false">{{ t('recipe.cancel') }}</wa-button>
+        <wa-button variant="danger" @click="onDelete">{{ t('recipe.delete') }}</wa-button>
+      </div>
+    </wa-dialog>
   </div>
 </template>
 

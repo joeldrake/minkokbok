@@ -15,12 +15,14 @@
     "pwa-assets": "node scripts/pwa-assets.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "0.128.0",
     "@awesome.me/webawesome": "3.14.0",
     "dexie": "4.4.6",
     "dexie-cloud-addon": "4.4.15",
     "vue": "3.5.43",
     "vue-i18n": "11.4.12",
-    "vue-router": "5.3.1"
+    "vue-router": "5.3.1",
+    "zod": "4.6.5"
   },
   "devDependencies": {
     "@types/node": "24.19.0",

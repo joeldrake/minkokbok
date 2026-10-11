@@ -13,7 +13,7 @@ import {
   type RecipeDraft,
 } from '../db/recipes';
 import { formatIngredients, formatSteps, parseIngredients, parseSteps } from '../db/parse';
-import type { Cover } from '../db/types';
+import type { Cover, RecipeSourceKind } from '../db/types';
 import { suggestEmojis } from '../cover/emoji';
 import CoverEditor from '../components/CoverEditor.vue';
 import { inputValue } from '../utils';
@@ -46,6 +46,8 @@ const form = reactive({
   sourceUrl: '',
 });
 const cover = ref<Cover>();
+// Varifrån receptet kom, t.ex. en Instagram-skärmdump. Följer med när receptet sparas.
+const sourceKind = ref<RecipeSourceKind>();
 const emojiSuggestions = computed(() =>
   suggestEmojis({ title: form.title, ingredients: parseIngredients(form.ingredients) }),
 );
@@ -65,6 +67,7 @@ function fillForm(recipe: RecipeDraft) {
     sourceUrl: recipe.source?.url ?? '',
   });
   cover.value = recipe.cover;
+  sourceKind.value = recipe.source?.kind;
 }
 
 watch(
@@ -88,6 +91,12 @@ if (imported) fillForm(imported);
  */
 function plainCover(cover: Cover): Cover {
   return cover.kind === 'emoji' ? { ...cover, emojis: [...cover.emojis] } : { ...cover };
+}
+
+/** Recept från bilder behåller sin källtyp, även med en länk. Övriga är länk eller manuella. */
+function sourceFor(url: string, kind: RecipeSourceKind | undefined): RecipeDraft['source'] {
+  if (kind === 'image' || kind === 'instagram') return url ? { kind, url } : { kind };
+  return url ? { kind: 'url', url } : { kind: 'manual' };
 }
 
 function toNumber(value: string): number | undefined {
@@ -119,7 +128,7 @@ async function onSubmit() {
     ingredients: parseIngredients(form.ingredients),
     steps: parseSteps(form.steps),
     tags: form.tags.split(',').map((s) => s.trim()).filter(Boolean),
-    source: form.sourceUrl.trim() ? { kind: 'url', url: form.sourceUrl.trim() } : { kind: 'manual' },
+    source: sourceFor(form.sourceUrl.trim(), sourceKind.value),
     // undefined tar bort ett tidigare omslag när receptet uppdateras
     cover: cover.value && plainCover(cover.value),
   };

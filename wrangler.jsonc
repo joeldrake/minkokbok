@@ -16,5 +16,5 @@
     "DEXIE_DB_URL": "https://zh1ojo18g.dexie.cloud"
   }
   // Hemligheter (lokalt i .dev.vars, i produktion med `wrangler secret put`):
-  // DEXIE_CLIENT_ID, DEXIE_CLIENT_SECRET
+  // DEXIE_CLIENT_ID, DEXIE_CLIENT_SECRET, ANTHROPIC_API_KEY (bildimport)
 }

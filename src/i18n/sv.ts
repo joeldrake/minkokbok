@@ -107,6 +107,23 @@ export default {
       errorNoRecipe:
         "Hittade inget recept på sidan. Sidan behöver ha receptdata enligt schema.org, vilket de flesta receptsajter har.",
     },
+    photo: {
+      title: "Från bilder",
+      intro:
+        "Ladda upp en skärmdump, t.ex. från Instagram, ett foto av en kokbokssida eller en handskriven lapp. Receptet tolkas med AI, recept på andra språk översätts till svenska, och du får granska det innan det sparas.",
+      dropHint: "Släpp bilder här eller klistra in en skärmdump. Upp till {max} bilder av samma recept.",
+      choose: "Välj bilder",
+      imageAlt: "Bild {n}",
+      remove: "Ta bort bild",
+      submit: "Tolka receptet",
+      waiting: "Det kan ta upp till en minut.",
+      needsLogin: "Logga in för att kunna tolka recept från bilder.",
+      needsRole: "Ditt konto kan inte tolka bilder än. Be en administratör om medlemskap.",
+      errorNotConfigured: "Bildimport är inte påslagen på servern än.",
+      errorUnreadable: "Bilderna kunde inte tolkas. Prova en tydligare bild.",
+      errorNoRecipe: "Hittade inget recept i bilderna.",
+      errorFetch: "Något gick fel när bilderna tolkades. Försök igen om en stund.",
+    },
     markdown: {
       title: "Från markdown-filer",
       intro:

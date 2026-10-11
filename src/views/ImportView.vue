@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, toRaw } from 'vue';
+import { computed, onBeforeUnmount, ref, toRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { cloudEnabled, db } from '../db';
 import { createRecipe, setPendingDraft, type RecipeDraft } from '../db/recipes';
 import { parseMarkdownRecipe } from '../db/importMarkdown';
 import { importRecipeFromUrl } from '../db/importUrl';
+import { importRecipeFromImages } from '../db/importPhoto';
 import { useCurrentUser } from '../composables/useCurrentUser';
 import { inputValue } from '../utils';
 
@@ -20,7 +21,7 @@ interface ImportItem {
 
 const { t } = useI18n();
 const router = useRouter();
-const { user, isLoggedIn } = useCurrentUser();
+const { user, isLoggedIn, canPublish } = useCurrentUser();
 const fileInput = ref<HTMLInputElement>();
 const items = ref<ImportItem[]>([]);
 const dragging = ref(false);
@@ -58,6 +59,73 @@ async function onImportUrl() {
     urlError.value = t(URL_ERROR_KEYS[(e as Error).message] ?? 'import.url.errorFetch');
   } finally {
     fetching.value = false;
+  }
+}
+
+const MAX_PHOTOS = 5;
+
+const PHOTO_ERROR_KEYS: Record<string, string> = {
+  'not-logged-in': 'import.photo.needsLogin',
+  'needs-role': 'import.photo.needsRole',
+  'not-configured': 'import.photo.errorNotConfigured',
+  unreadable: 'import.photo.errorUnreadable',
+  'no-recipe': 'import.photo.errorNoRecipe',
+  'missing-title': 'import.errorMissingTitle',
+};
+
+const photoInput = ref<HTMLInputElement>();
+const photos = ref<{ file: File; preview: string }[]>([]);
+const photoDragging = ref(false);
+const reading = ref(false);
+const photoError = ref('');
+
+function addPhotos(files: File[]) {
+  photoError.value = '';
+  for (const file of files) {
+    if (!file.type.startsWith('image/') || photos.value.length >= MAX_PHOTOS) continue;
+    photos.value.push({ file, preview: URL.createObjectURL(file) });
+  }
+}
+
+function removePhoto(index: number) {
+  URL.revokeObjectURL(photos.value[index].preview);
+  photos.value.splice(index, 1);
+}
+
+onBeforeUnmount(() => photos.value.forEach((p) => URL.revokeObjectURL(p.preview)));
+
+function onPhotoChange(event: Event) {
+  const input = event.target as HTMLInputElement;
+  addPhotos(Array.from(input.files ?? []));
+  input.value = '';
+}
+
+function onPhotoDrop(event: DragEvent) {
+  photoDragging.value = false;
+  addPhotos(Array.from(event.dataTransfer?.files ?? []));
+}
+
+/** En skärmdump kan klistras in direkt, t.ex. med Cmd+V på datorn. */
+function onPaste(event: ClipboardEvent) {
+  const files = Array.from(event.clipboardData?.files ?? []).filter((f) => f.type.startsWith('image/'));
+  if (files.length) addPhotos(files);
+}
+
+/** Låter Claude tolka bilderna och öppnar resultatet som ett nytt recept att granska. */
+async function onReadPhotos() {
+  reading.value = true;
+  photoError.value = '';
+  try {
+    const draft = await importRecipeFromImages(
+      photos.value.map((p) => p.file),
+      user.value?.accessToken,
+    );
+    setPendingDraft(draft);
+    router.push({ name: 'new' });
+  } catch (e) {
+    photoError.value = t(PHOTO_ERROR_KEYS[(e as Error).message] ?? 'import.photo.errorFetch');
+  } finally {
+    reading.value = false;
   }
 }
 
@@ -124,7 +192,7 @@ const STATUS_VARIANT: Record<ItemStatus, string> = {
 </script>
 
 <template>
-  <div class="page-content narrow wa-stack wa-gap-l">
+  <div class="page-content narrow wa-stack wa-gap-l" @paste="onPaste">
     <h1 class="wa-heading-2xl">{{ t('import.title') }}</h1>
 
     <section class="wa-stack wa-gap-m">
@@ -149,6 +217,55 @@ const STATUS_VARIANT: Record<ItemStatus, string> = {
       <wa-callout v-if="urlError" variant="danger" size="s">
         <wa-icon slot="icon" name="triangle-exclamation"></wa-icon>
         {{ urlError }}
+      </wa-callout>
+    </section>
+
+    <section class="wa-stack wa-gap-m">
+      <h2 class="wa-heading-l">{{ t('import.photo.title') }}</h2>
+      <p class="wa-color-text-quiet">{{ t('import.photo.intro') }}</p>
+      <template v-if="cloudEnabled && isLoggedIn && canPublish">
+        <div
+          class="dropzone wa-stack wa-gap-s wa-align-items-center wa-text-center"
+          :class="{ dragging: photoDragging }"
+          @dragover.prevent="photoDragging = true"
+          @dragleave="photoDragging = false"
+          @drop.prevent="onPhotoDrop"
+        >
+          <wa-icon name="camera" class="dropzone-icon"></wa-icon>
+          <p>{{ t('import.photo.dropHint', { max: MAX_PHOTOS }) }}</p>
+          <wa-button appearance="outlined" :disabled="photos.length >= MAX_PHOTOS" @click="photoInput?.click()">
+            {{ t('import.photo.choose') }}
+          </wa-button>
+          <input ref="photoInput" type="file" accept="image/*" multiple class="file-input" @change="onPhotoChange" />
+        </div>
+
+        <ul v-if="photos.length" class="photos">
+          <li v-for="(photo, index) in photos" :key="photo.preview" class="photo">
+            <img :src="photo.preview" :alt="t('import.photo.imageAlt', { n: index + 1 })" />
+            <wa-button
+              size="s"
+              appearance="filled"
+              class="photo-remove"
+              :disabled="reading"
+              @click="removePhoto(index)"
+            >
+              <wa-icon name="xmark" :label="t('import.photo.remove')"></wa-icon>
+            </wa-button>
+          </li>
+        </ul>
+
+        <div v-if="photos.length" class="wa-cluster wa-gap-s wa-align-items-center">
+          <wa-button variant="brand" :loading="reading" @click="onReadPhotos">{{ t('import.photo.submit') }}</wa-button>
+          <span v-if="reading" class="wa-caption-m wa-color-text-quiet">{{ t('import.photo.waiting') }}</span>
+        </div>
+      </template>
+      <wa-callout v-else variant="neutral" size="s">
+        <wa-icon slot="icon" name="circle-info"></wa-icon>
+        {{ isLoggedIn ? t('import.photo.needsRole') : t('import.photo.needsLogin') }}
+      </wa-callout>
+      <wa-callout v-if="photoError" variant="danger" size="s">
+        <wa-icon slot="icon" name="triangle-exclamation"></wa-icon>
+        {{ photoError }}
       </wa-callout>
     </section>
 
@@ -220,6 +337,35 @@ const STATUS_VARIANT: Record<ItemStatus, string> = {
 .dropzone-icon {
   font-size: var(--wa-font-size-3xl);
   color: var(--wa-color-brand-fill-loud);
+}
+
+.photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: var(--wa-space-s);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.photo {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--wa-border-radius-m);
+  overflow: hidden;
+  background: var(--wa-color-neutral-fill-quiet);
+}
+
+.photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.photo-remove {
+  position: absolute;
+  top: var(--wa-space-2xs);
+  right: var(--wa-space-2xs);
 }
 
 .file-input {

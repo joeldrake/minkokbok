@@ -20,7 +20,7 @@ Min Kokbok är en webbapp där man samlar sina recept, når dem snabbt från mob
 | Hosting           | Cloudflare (Workers static assets + Worker för `/api/*`) | Beslutat, ej deployat                         |
 | Publika adresser  | `/[användarnamn]/[slug]` med förhandsbild vid delning     | Byggt                                         |
 | Installation      | PWA (manifest, ikoner, iOS-startskärmar)                 | Byggt                                         |
-| Import            | schema.org/JSON-LD via Worker, Claude API för resten     | Webbsida och Markdown byggt, AI uppskjuten    |
+| Import            | schema.org/JSON-LD via Worker, Claude API för bilder     | Webbsida, bilder och Markdown byggt           |
 | Språk             | Svenska, men all UI-text via `vue-i18n` från start       | Beslutat, byggt                               |
 
 ## MVP-omfång
@@ -31,7 +31,7 @@ Min Kokbok är en webbapp där man samlar sina recept, når dem snabbt från mob
 | 2   | Spara, visa, redigera och ta bort recept i sitt konto                                       | Klart, inklusive omslag.                                                                      |
 | 3   | Fungerar bra på mobil och desktop och synkar snabbt mellan enheter                          | Mobilanpassat och installerbart som PWA. Synk mellan enheter återstår att verifiera i spiken. |
 | 4   | Recept är privata som standard. Valda recept kan visas publikt på `minkokbok.<tld>/[konto]` | Klart i appen. Domän ej vald.                                                                 |
-| 5   | Import från skärmdump, foto, webbsida eller Instagram-bildtext                              | Webbsidor med schema.org-data och Markdown-filer klart. Övrigt kräver Claude API-konto.       |
+| 5   | Import från skärmdump, foto, webbsida eller Instagram-bildtext                              | Klart för webbsidor med schema.org-data, bilder (skärmdumpar, foton, lappar) och Markdown.    |
 
 ## Beslut och motiveringar
 
@@ -127,17 +127,26 @@ Tjänster som visar länkförhandsvisningar (Facebook, Slack, iMessage …) kör
 
 Appen kan installeras på hemskärmen, med manifest, ikoner (även maskable) och startskärmar för iOS i ljust och mörkt läge. Bilderna skapas med `npm run pwa-assets`. Någon service worker för offline-cache av själva appen finns inte än. Datan fungerar redan offline via IndexedDB.
 
-### AI-import (uppskjutet)
+### AI-import från bilder (byggt)
 
 Ett Claude Pro-abonnemang kan inte driva en app. Det krävs ett API-konto som betalas per anrop, och API-nyckeln ska ligga i en Cloudflare Worker, aldrig i klienten.
 
 | Källa                               | Metod                                                                                                                                                |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Webbsida                            | Byggt för sidor med schema.org/JSON-LD (gratis och exakt), se nedan. Claude blir reserv för sidor utan receptdata.                                   |
-| Skärmdump / foto / handskriven lapp | Bild till Claude med structured outputs enligt receptschemat.                                                                                        |
-| Instagram                           | Automatisk hämtning är skör (Meta begränsar). Användaren klistrar in bildtexten eller tar en skärmdump. På Android kan en PWA ta emot "Dela" direkt. |
+| Skärmdump / foto / handskriven lapp | Byggt: bilderna skickas till Claude med structured outputs enligt receptschemat, se nedan.                                                           |
+| Instagram                           | Byggt via skärmdumpar (automatisk hämtning är skör, Meta begränsar). På Android kan en PWA senare ta emot "Dela" direkt.                            |
 
 Uppskattad kostnad per import: från cirka 0,001 USD (Haiku 5.5) till cirka 0,03 USD (Opus 5.5). Börja med en kapabel modell för handskrift och testa sedan om en billigare räcker för enklare källor.
+
+**Så är det byggt:** `POST /api/import/photo` i Workern (`worker/photoImport.ts`) tar emot 1–5 bilder av samma recept. Klienten krymper dem först (längsta sidan 1600 px). Workern skickar dem till Claude Opus 5.5 (`claude-opus-5-5`, effort `medium`) med structured outputs enligt `worker/photoRecipe.ts`, så svaret alltid följer schemat. Resultatet öppnas i redigeringsvyn och granskas innan det sparas.
+
+- API-nyckeln är hemligheten `ANTHROPIC_API_KEY` (lokalt i `.dev.vars`, i produktion med `wrangler secret put`). Utan den svarar endpointen 503.
+- Endpointen kräver medlems- eller adminroll, eftersom varje anrop kostar pengar. Eval-konton kan inte använda den.
+- Server-side fallback (`fallbacks: "default"`) är påslagen: avböjer Claudes säkerhetsfilter en förfrågan körs den om på den modell Anthropic rekommenderar.
+- Recept på andra språk översätts till svenska, och amerikanska och brittiska mått räknas om till svenska (dl, msk, g, °C). Beskrivningen får raden "Översatt från …".
+- Svårlästa ord listas sist i beskrivningen ("Svårläst, kontrollera: …"), och upphovspersonen läggs till som "Recept från …". Källtypen sparas som `image` eller `instagram`.
+- Nästa steg för kostnaden: begränsa antalet bildimporter per konto och månad i Workern, och mät om Sonnet 5.5 eller lägre effort räcker för skärmdumpar.
 
 **Under tiden:** man kan importera recept från Markdown-filer (`/recept/importera`). Importen visar vilka filer som är redo, redan finns eller hoppas över innan något sparas.
 
@@ -203,8 +212,8 @@ interface Profile {
 
 ## Nästa steg
 
-Klart: projektet är uppsatt, Dexie Cloud-databasen är skapad, grundflödet för recept och den publika sidan är byggda, och inloggning, roller, admin, omslag, Markdown-import, import från webbsidor, PWA och publika receptadresser med förhandsbilder finns på plats.
+Klart: projektet är uppsatt, Dexie Cloud-databasen är skapad, grundflödet för recept och den publika sidan är byggda, och inloggning, roller, admin, omslag, Markdown-import, import från webbsidor och bilder, PWA och publika receptadresser med förhandsbilder finns på plats.
 
 1. Välj och registrera domän.
-2. Skaffa Claude API-konto och bygg AI-import (bild, foto, Instagram, och webbsidor utan schema.org-data).
+2. Lägg in `ANTHROPIC_API_KEY` i produktion och provkör bildimporten på riktiga lappar och skärmdumpar. Överväg Claude som reserv för webbsidor utan schema.org-data.
 3. Byt till Vite+.

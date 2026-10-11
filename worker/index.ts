@@ -5,6 +5,8 @@
  * REST-API med klientnyckeln, som aldrig får skickas till webbläsaren.
  *
  * Receptimport från webbsidor (/api/import) är öppen för alla inloggade, se import.ts.
+ * Import från bilder (/api/import/photo) anropar Claude och kostar per anrop, så den kräver
+ * en roll (member eller admin), se photoImport.ts.
  *
  * Publika receptsidor (/[användarnamn]/[slug]) får Open Graph-taggar och schema.org-data inlagda
  * i HTML:en, eftersom de som hämtar förhandsvisningar (Facebook, Slack, iMessage …) och
@@ -13,6 +15,7 @@
 
 import { HttpError, json } from './http';
 import { importImage, importPage } from './import';
+import { importPhoto } from './photoImport';
 import { ogImageResponse, publicRecipePage } from './og';
 
 export interface Env {
@@ -20,6 +23,7 @@ export interface Env {
   DEXIE_DB_URL: string;
   DEXIE_CLIENT_ID: string;
   DEXIE_CLIENT_SECRET: string;
+  ANTHROPIC_API_KEY?: string;
 }
 
 const PUBLIC_REALM = 'rlm-public';
@@ -71,6 +75,11 @@ export default {
 };
 
 async function handleApi(request: Request, url: URL, env: Env): Promise<Response> {
+  if (url.pathname === '/api/import/photo' && request.method === 'POST') {
+    await requireMember(request, env);
+    return importPhoto(request, env);
+  }
+
   if (url.pathname.startsWith('/api/import') && request.method === 'GET') {
     await requireUser(request, env);
     if (url.pathname === '/api/import') return importPage(url);
@@ -131,6 +140,14 @@ async function requireUser(request: Request, env: Env): Promise<string> {
   const check = await fetch(`${env.DEXIE_DB_URL}/my/members`, { headers: { Authorization: `Bearer ${token}` } });
   if (!check.ok) throw new HttpError(401, 'Ogiltig eller utgången inloggning');
   return jwtSubject(token);
+}
+
+/** Som requireUser, men kräver en roll (member eller admin) i den publika realmen. */
+async function requireMember(request: Request, env: Env): Promise<string> {
+  const userId = await requireUser(request, env);
+  const members = (await publicMembers(env)).filter((m) => m.userId === userId);
+  if (!roleOf(members)) throw new HttpError(403, 'Kräver medlemskap');
+  return userId;
 }
 
 /** Som requireUser, men kräver dessutom admin-rollen. */

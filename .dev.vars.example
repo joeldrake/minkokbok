@@ -1,0 +1,10 @@
+# Hemligheter för Workern (/api/*) vid lokal utveckling med `npm run dev:api`.
+# Kopiera den här filen till .dev.vars och fyll i värdena. I produktion: `npx wrangler secret put <NAMN>`.
+# Klientens variabler (VITE_*) ligger i stället i .env.local, se .env.example.
+
+# Dexie Clouds klientnyckel för admin-API:et. Finns i dexie-cloud.key efter `npx dexie-cloud create`.
+DEXIE_CLIENT_ID=
+DEXIE_CLIENT_SECRET=
+
+# Claude API-nyckel för import från bilder. Skapas på https://platform.claude.com/settings/keys
+ANTHROPIC_API_KEY=

@@ -6,14 +6,17 @@ import { cloudEnabled, db } from '../db';
 import type { Ingredient } from '../db/types';
 import { findPublicRecipe, isPublic } from '../db/recipes';
 import { useLiveQuery } from '../composables/useLiveQuery';
+import { useCurrentUser } from '../composables/useCurrentUser';
 import { bookmark, removeBookmark } from '../db/social';
 import { recipeOrigin } from '../navigation';
 import RecipeCover from '../components/RecipeCover.vue';
+import BackButton from '../components/BackButton.vue';
 
 /** Antingen /recept/:id, eller den publika adressen /:username/:slug. */
 const props = defineProps<{ id?: string; username?: string; slug?: string }>();
 const { t } = useI18n();
 const router = useRouter();
+const { isLoggedIn } = useCurrentUser();
 
 const data = useLiveQuery(
   async () => {
@@ -63,23 +66,27 @@ const parent = computed(() => {
   return router.resolve({ name: 'list' }).href;
 });
 
-/** Går tillbaka i historiken om föregående sida är den vi ska till, så att historiken inte växer. */
-function goToParent() {
-  if (!parent.value) return;
-  if (window.history.state?.back === parent.value) router.back();
-  else router.push(parent.value);
-}
-
 const isOwner = computed(() => {
   const owner = recipe.value?.owner;
   return !owner || owner === db.cloud.currentUserId;
 });
 
-/** En annan kocks publika recept, som man kan spara till fliken "Andras recept". */
-const canBookmark = computed(() => cloudEnabled && !isOwner.value && Boolean(recipe.value && isPublic(recipe.value)));
 const isBookmarked = useLiveQuery(
   async () => (recipe.value ? (await db.bookmarks.where('recipeId').equals(recipe.value.id).count()) > 0 : false),
   () => recipe.value?.id,
+);
+
+/**
+ * En annan kocks publika recept, som man kan spara till fliken "Andras recept".
+ * Bara inloggad: utloggad går det inte att avgöra om receptet är ens eget.
+ * Ett eget recept som ändå blivit sparat får knappen, så att bokmärket går att ta bort.
+ */
+const canBookmark = computed(
+  () =>
+    cloudEnabled &&
+    isLoggedIn.value &&
+    (!isOwner.value || Boolean(isBookmarked.value)) &&
+    Boolean(recipe.value && isPublic(recipe.value)),
 );
 
 function toggleBookmark() {
@@ -101,14 +108,8 @@ const ingredientGroups = computed(() => {
 </script>
 
 <template>
-  <!-- Tillbaka-knappen ligger på omslaget, ovanför pappret -->
-  <nav v-if="recipe && parent" class="page-content recipe-nav">
-    <wa-button class="back" appearance="plain" size="s" @click="goToParent">
-      <wa-icon slot="start" name="chevron-left"></wa-icon>
-      {{ t('nav.back') }}
-    </wa-button>
-  </nav>
-  <div class="page-content narrow recipe-paper">
+  <BackButton v-if="recipe && parent" :to="parent" narrow class="recipe-width" />
+  <div class="page-content narrow recipe-paper recipe-width">
     <div v-if="recipe === undefined" class="wa-stack wa-align-items-center">
       <wa-spinner></wa-spinner>
     </div>
@@ -163,7 +164,10 @@ const ingredientGroups = computed(() => {
           <RouterLink :to="{ name: 'public', params: { username: data.profile.username } }">{{ data.profile.displayName }}</RouterLink>
         </p>
         <p v-if="recipe.description" class="wa-body-l wa-color-text-quiet lead">{{ recipe.description }}</p>
-        <div class="wa-cluster wa-gap-xs">
+        <div
+          v-if="recipe.prepMinutes || recipe.cookMinutes || recipe.servings || recipe.tags.length"
+          class="wa-cluster wa-gap-xs"
+        >
           <wa-tag v-if="recipe.prepMinutes" appearance="filled" size="s">
             <wa-icon name="clock"></wa-icon>&nbsp;{{ t('recipe.prepShort', { n: recipe.prepMinutes }) }}
           </wa-tag>
@@ -209,15 +213,9 @@ const ingredientGroups = computed(() => {
 </template>
 
 <style scoped>
-.recipe-nav {
-  max-inline-size: 44rem;
-  margin-block-end: var(--wa-space-s);
-}
-
-/* Knappens text i linje med pappersarkets vänsterkant */
-.back {
-  --wa-color-on-quiet: var(--mk-on-linen);
-  margin-inline-start: calc(-1 * var(--wa-space-s));
+/* Receptet får ett bredare pappersark än formulären, och tillbaka-knappen följer med */
+.page-content.recipe-width {
+  max-inline-size: 54rem;
 }
 
 /* Långa ord (t.ex. en titel) scrollar inuti pappret i stället för att spräcka sidan */
@@ -244,6 +242,7 @@ const ingredientGroups = computed(() => {
 .title {
   flex: 1;
   min-width: 0;
+  margin: 0;
   font-size: var(--title-size);
   overflow-wrap: break-word;
   text-wrap: pretty;
@@ -307,10 +306,19 @@ const ingredientGroups = computed(() => {
   gap: var(--wa-space-2xl);
 }
 
+/*
+ * Ingredienskolumnen är minst 14rem men växer om ett långt ord kräver det, så att den aldrig
+ * flödar över in i "Gör så här". Golvet ligger på listan och inte på kolumnen eller sektionen:
+ * minmax(14rem, …) eller min-inline-size på sektionen ersätter innehållsminimumet och låser bredden.
+ */
 @media (width >= 48rem) {
   .recipe-body {
-    grid-template-columns: minmax(14rem, 1fr) 2fr;
+    grid-template-columns: 1fr 2fr;
     align-items: start;
+  }
+
+  .ingredients {
+    min-inline-size: 14rem;
   }
 }
 

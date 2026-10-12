@@ -7,10 +7,11 @@ import { useCurrentUser } from '../composables/useCurrentUser';
 import { publicRecipeRoute } from '../db/recipes';
 import { follow, unfollow } from '../db/social';
 import RecipeCard from '../components/RecipeCard.vue';
+import BackButton from '../components/BackButton.vue';
 
 const props = defineProps<{ username: string }>();
 const { t } = useI18n();
-const { user } = useCurrentUser();
+const { user, isLoggedIn } = useCurrentUser();
 
 const data = useLiveQuery(
   async () => {
@@ -38,6 +39,7 @@ function toggleFollow() {
 </script>
 
 <template>
+  <BackButton to="/" />
   <div class="page-content wa-stack wa-gap-xl">
     <div v-if="data === undefined" class="wa-stack wa-align-items-center">
       <wa-spinner></wa-spinner>
@@ -52,7 +54,7 @@ function toggleFollow() {
         <div class="wa-split wa-gap-m">
           <h1 class="wa-heading-2xl">{{ t('public.recipesBy', { name: data.profile.displayName }) }}</h1>
           <wa-button
-            v-if="cloudEnabled && !isOwnProfile"
+            v-if="cloudEnabled && isLoggedIn && (!isOwnProfile || data.following)"
             :variant="data.following ? 'neutral' : 'brand'"
             :appearance="data.following ? 'outlined' : 'accent'"
             size="s"

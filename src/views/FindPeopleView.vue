@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { db, PUBLIC_REALM } from '../db';
 import { useLiveQuery } from '../composables/useLiveQuery';
 import { inputValue } from '../utils';
+import BackButton from '../components/BackButton.vue';
 
 /** Så kort sökning räcker inte, så att sidan inte blir en lista över alla användare. */
 const MIN_QUERY_LENGTH = 2;
@@ -55,6 +56,7 @@ watch(results, (value) => {
 </script>
 
 <template>
+  <BackButton narrow />
   <div class="page-content narrow wa-stack wa-gap-xl">
     <header class="wa-stack wa-gap-s">
       <h1 class="wa-heading-2xl">{{ t('find.title') }}</h1>

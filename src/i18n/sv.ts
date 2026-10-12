@@ -1,6 +1,7 @@
 export default {
   app: {
     name: "Min Kokbok",
+    github: "GitHub",
   },
   nav: {
     myRecipes: "Mina recept",
@@ -27,7 +28,8 @@ export default {
     title: "Mina recept",
     othersTitle: "Andras recept",
     following: "Kockar du följer",
-    followingEmpty: "Du följer inga kockar än. Sök upp någon och tryck på Följ.",
+    followingEmpty:
+      "Du följer inga kockar än. Sök upp någon och tryck på Följ.",
     latest: "Nytt från kockar du följer",
     saved: "Sparade recept",
     savedEmpty:
@@ -35,7 +37,7 @@ export default {
     search: "Sök bland recepten",
     emptyTitle: "Välkommen till din kokbok",
     emptyText:
-      "Samla alla dina recept på ett ställe: mormors köttbullar, veckans soppa och den där kakan alla frågar efter. Alltid till hands, i telefonen vid spisen eller på datorn när du planerar veckans middagar.",
+      "Samla alla dina recept på ett ställe: mormors köttbullar, din vegetariska lasagne och den där kakan alla älskar. Alltid till hands, i mobilen, paddan eller på datorn.",
     emptyAction: "Lägg till ditt första recept",
     emptyImport: "Importera recept",
     emptyFeatures: {
@@ -109,10 +111,12 @@ export default {
       "Lägg till en egen bild, t.ex. från kamerarullen. Eller skapa ett glatt omslag av emojis: vi föreslår emojis utifrån titeln och ingredienserna, och du kan ändra dem som du vill.",
     uploadImage: "Ladda upp bild",
     replaceImage: "Byt bild",
-    imageError: "Bilden kunde inte läsas. Prova en annan bild, t.ex. JPEG eller PNG.",
+    imageError:
+      "Bilden kunde inte läsas. Prova en annan bild, t.ex. JPEG eller PNG.",
     create: "Skapa emoji-omslag",
     emojis: "Emojis",
-    emojisHint: "Skriv eller klistra in upp till {max} emojis, eller välj bland förslagen.",
+    emojisHint:
+      "Skriv eller klistra in upp till {max} emojis, eller välj bland förslagen.",
     suggestions: "Förslag",
     add: "Lägg till {emoji}",
     color: "Färg",
@@ -129,8 +133,10 @@ export default {
       placeholder: "https://…",
       submit: "Hämta recept",
       needsLogin: "Logga in för att kunna hämta recept från webbsidor.",
-      errorInvalid: "Det ser inte ut som en webbadress. Kontrollera att den är rätt.",
-      errorFetch: "Sidan gick inte att hämta. Kontrollera adressen eller försök igen senare.",
+      errorInvalid:
+        "Det ser inte ut som en webbadress. Kontrollera att den är rätt.",
+      errorFetch:
+        "Sidan gick inte att hämta. Kontrollera adressen eller försök igen senare.",
       errorNoRecipe:
         "Hittade inget recept på sidan. Sidan behöver ha receptdata enligt schema.org, vilket de flesta receptsajter har.",
     },
@@ -138,18 +144,21 @@ export default {
       title: "Från bilder",
       intro:
         "Ladda upp en skärmdump, t.ex. från Instagram, ett foto av en kokbokssida eller en handskriven lapp. Receptet tolkas med AI, recept på andra språk översätts till svenska, och du får granska det innan det sparas.",
-      dropHint: "Släpp bilder här eller klistra in en skärmdump. Upp till {max} bilder av samma recept.",
+      dropHint:
+        "Släpp bilder här eller klistra in en skärmdump. Upp till {max} bilder av samma recept.",
       choose: "Välj bilder",
       imageAlt: "Bild {n}",
       remove: "Ta bort bild",
       submit: "Tolka receptet",
       waiting: "Det kan ta upp till en minut.",
       needsLogin: "Logga in för att kunna tolka recept från bilder.",
-      needsRole: "Ditt konto kan inte tolka bilder än. Be en administratör om medlemskap.",
+      needsRole:
+        "Ditt konto kan inte tolka bilder än. Be en administratör om medlemskap.",
       errorNotConfigured: "Bildimport är inte påslagen på servern än.",
       errorUnreadable: "Bilderna kunde inte tolkas. Prova en tydligare bild.",
       errorNoRecipe: "Hittade inget recept i bilderna.",
-      errorFetch: "Något gick fel när bilderna tolkades. Försök igen om en stund.",
+      errorFetch:
+        "Något gick fel när bilderna tolkades. Försök igen om en stund.",
     },
     markdown: {
       title: "Från markdown-filer",

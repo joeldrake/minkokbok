@@ -79,15 +79,20 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
           <wa-button size="s" appearance="plain" @click="clearSyncRejections()">{{ t('cloud.dismiss') }}</wa-button>
         </div>
       </wa-callout>
-      <RouterView />
+      <!-- Listan sparas, så att tillbaka från ett recept visar den direkt i stället för att ladda om den -->
+      <RouterView v-slot="{ Component }">
+        <KeepAlive include="RecipeListView">
+          <component :is="Component" />
+        </KeepAlive>
+      </RouterView>
     </main>
 
     <footer v-if="route.name === 'list'" slot="footer" class="app-footer">
       <div class="app-footer-inner wa-split wa-gap-l">
-        <div class="wa-cluster wa-gap-s">
-          <BrandLogo class="footer-logo" />
-          <span class="footer-name">{{ t('app.name') }}</span>
-        </div>
+        <a href="https://github.com/joeldrake/minkokbok" class="wa-cluster wa-gap-xs" target="_blank" rel="noopener">
+          <wa-icon family="brands" name="github" class="footer-github"></wa-icon>
+          {{ t('app.github') }}
+        </a>
         <span class="wa-caption-m wa-color-text-quiet">{{ year }}</span>
       </div>
     </footer>
@@ -121,14 +126,8 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
   margin-inline: auto;
 }
 
-.footer-logo {
-  inline-size: 1.75rem;
-  block-size: 1.75rem;
-}
-
-.footer-name {
-  font-family: var(--wa-font-family-heading);
-  font-weight: var(--wa-font-weight-bold);
+.footer-github {
+  font-size: var(--wa-font-size-l);
 }
 
 .local-notice,

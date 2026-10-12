@@ -1,28 +1,24 @@
 # Min Kokbok
 
-Min Kokbok är en webbapp för att samla dina egna recept på ett ställe. Du når den här:
+En webbapp för att spara och dela egna recept. Local-first: recepten lagras i webbläsaren och synkas mellan enheter vid inloggning. Recept kan importeras från webbadresser eller foton och visas på en publik profilsida.
 
-👉 **https://minkokbok.joeldrak3.workers.dev**
+Live: https://minkokbok.joeldrak3.workers.dev
 
-## Vad kan man göra?
+## Tech-stack
 
-- **Spara recept** med ingredienser, steg och bild.
-- **Ha dem med dig överallt.** Logga in så finns recepten både i mobilen och på datorn, och ändringar följer med automatiskt.
-- **Dela dina favoriter.** Välj ut recept och visa dem på din egen publika sida, som vänner och familj kan besöka utan att logga in.
+- **Front end:** Vue, Web Awesome, TypeScript, Vite, Dexie (IndexedDB)
+- **Back end:** Cloudflare Workers, Dexie Cloud för synk och inloggning
+- **Validering:** Zod
+- **Verktyg:** Vitest, oxlint, vue-tsc, Wrangler
 
-## Kom igång
-
-1. Gå till adressen ovan i webbläsaren, på mobilen eller datorn.
-2. Börja lägga in recept direkt. Utan inloggning sparas de bara i den webbläsaren.
-3. Logga in med din e-postadress för att få recepten på alla dina enheter och kunna dela dem.
-
-**Tips:** På mobilen kan du lägga till Min Kokbok på hemskärmen (via _Dela_ → _Lägg till på hemskärmen_), så öppnas den som en vanlig app.
-
-## För utvecklare
+## Utveckling
 
 ```bash
 npm install
-npm run dev
+npm run dev       # frontend
+npm run dev:api   # worker lokalt
+npm test
+npm run deploy
 ```
 
-Bakgrund, tekniska val och hur appen är uppbyggd finns i [docs/beslutsunderlag.md](docs/beslutsunderlag.md).
+Mer om arkitektur och tekniska val: [docs/beslutsunderlag.md](docs/beslutsunderlag.md).

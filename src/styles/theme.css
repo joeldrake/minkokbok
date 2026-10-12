@@ -302,8 +302,8 @@ wa-page > main {
   padding-block-end: calc(var(--wa-space-3xl) + env(safe-area-inset-bottom, 0px));
 }
 
-/* Receptsidan: tillbaka-knappen ovanför pappret ger redan luft upptill */
-wa-page > main:has(> .recipe-paper) {
+/* Tillbaka-knappen ovanför innehållet ger redan luft upptill */
+wa-page > main:has(> .back-nav) {
   padding-block-start: var(--wa-space-m);
 }
 

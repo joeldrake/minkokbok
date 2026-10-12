@@ -16,11 +16,13 @@ const LATEST_COUNT = 6;
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const { user, profile } = useCurrentUser();
+const { user, profile, isLoggedIn } = useCurrentUser();
 const query = ref('');
 
+/** Följningar och bokmärken hör till kontot, så "Andras recept" finns bara för inloggade. */
+const showTabs = computed(() => cloudEnabled && isLoggedIn.value);
 /** Fliken står i adressen (?visa=andra), så att tillbaka från ett recept hamnar på rätt flik. */
-const tab = computed(() => (cloudEnabled && route.query.visa === 'andra' ? 'others' : 'mine'));
+const tab = computed(() => (showTabs.value && route.query.visa === 'andra' ? 'others' : 'mine'));
 
 // Den publika realmen synkas till alla, så filtrera fram de egna recepten.
 const recipes = useLiveQuery(
@@ -90,7 +92,8 @@ function authorOf(recipe: { owner?: string }) {
 
 <template>
   <div class="page-content wa-stack wa-gap-xl">
-    <div class="wa-split wa-gap-m">
+    <!-- Utloggad utan recept är raden tom; utan den hamnar välkomstrutan högst upp -->
+    <div v-if="showTabs || showSearch || recipes?.length" class="wa-split wa-gap-m">
       <div class="wa-cluster wa-gap-s">
         <!-- Även på fliken Andras recept, så att flikarna inte hoppar i sidled när man byter -->
         <wa-button
@@ -102,7 +105,7 @@ function authorOf(recipe: { owner?: string }) {
         >
           <wa-icon name="plus" :label="t('nav.newRecipe')"></wa-icon>
         </wa-button>
-        <template v-if="cloudEnabled">
+        <template v-if="showTabs">
           <h1 class="wa-visually-hidden">{{ tab === 'mine' ? t('list.title') : t('list.othersTitle') }}</h1>
           <nav class="tabs wa-cluster wa-gap-l">
             <RouterLink :to="{ name: 'list' }" replace class="tab" :aria-current="tab === 'mine' ? 'page' : undefined">
@@ -118,7 +121,8 @@ function authorOf(recipe: { owner?: string }) {
             </RouterLink>
           </nav>
         </template>
-        <h1 v-else class="wa-heading-2xl">{{ t('list.title') }}</h1>
+        <!-- Utan recept tar välkomstrutan över, och en rubrik för en tom lista säger inget -->
+        <h1 v-else-if="recipes?.length" class="wa-heading-2xl">{{ t('list.title') }}</h1>
       </div>
       <wa-input
         v-if="showSearch"

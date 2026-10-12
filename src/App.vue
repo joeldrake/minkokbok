@@ -5,6 +5,7 @@ import { cloudEnabled, db } from './db';
 import { useCurrentUser } from './composables/useCurrentUser';
 import BrandLogo from './components/BrandLogo.vue';
 import LoginDialog from './components/LoginDialog.vue';
+import UpdatePrompt from './components/UpdatePrompt.vue';
 import { clearSyncRejections, syncRejections } from './db/syncRejections';
 import { forgetRecipeOrigin } from './navigation';
 
@@ -98,6 +99,7 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
     </footer>
 
     <LoginDialog v-if="cloudEnabled" />
+    <UpdatePrompt />
   </wa-page>
 </template>
 

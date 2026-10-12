@@ -295,4 +295,9 @@ export default {
     empty: "{name} har inte delat några recept än.",
     notFound: 'Hittade ingen kokbok under "{username}".',
   },
+  update: {
+    available: "Det finns en ny version av Min Kokbok.",
+    reload: "Uppdatera",
+    later: "Senare",
+  },
 } as const;

@@ -14,7 +14,7 @@ const router = useRouter();
 const { isLoggedIn, isLoading, profile, canPublish } = useCurrentUser();
 
 // Sökvägar som appen själv använder kan inte bli användarnamn.
-const RESERVED = new Set(['recept', 'profil', 'logga-in', 'om', 'api', 'admin', 'installningar']);
+const RESERVED = new Set(['recept', 'profil', 'hitta', 'logga-in', 'om', 'api', 'admin', 'installningar']);
 const USERNAME_PATTERN = /^[a-z0-9](?:[a-z0-9-]{1,28})[a-z0-9]$/;
 
 const host = location.host;

@@ -6,6 +6,7 @@ import { useCurrentUser } from './composables/useCurrentUser';
 import BrandLogo from './components/BrandLogo.vue';
 import LoginDialog from './components/LoginDialog.vue';
 import { clearSyncRejections, syncRejections } from './db/syncRejections';
+import { forgetRecipeOrigin } from './navigation';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -25,17 +26,21 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
 <template>
   <wa-page disable-navigation-toggle disable-sticky="header">
     <header slot="header" class="app-header wa-split">
-      <RouterLink :to="{ name: 'list' }" class="brand plain-link wa-cluster wa-gap-xs">
+      <RouterLink :to="{ name: 'list' }" class="brand plain-link wa-cluster wa-gap-xs" @click="forgetRecipeOrigin">
         <BrandLogo class="brand-logo" />
         <span>{{ t('app.name') }}</span>
       </RouterLink>
 
       <div class="wa-cluster wa-gap-s">
+        <wa-button v-if="cloudEnabled" appearance="plain" size="s" :title="t('nav.find')" @click="router.push({ name: 'find' })">
+          <wa-icon slot="start" name="magnifying-glass"></wa-icon>
+          <span class="header-label">{{ t('nav.find') }}</span>
+        </wa-button>
         <template v-if="cloudEnabled && !isLoading">
           <wa-dropdown v-if="isLoggedIn" placement="bottom-end" @wa-select="onAccountSelect">
             <wa-button slot="trigger" appearance="plain" size="s" with-caret>
               <wa-icon slot="start" name="circle-user"></wa-icon>
-              <span class="account-label">{{ user?.name || user?.email || t('nav.account') }}</span>
+              <span class="header-label">{{ user?.name || user?.email || t('nav.account') }}</span>
             </wa-button>
             <wa-dropdown-item value="profile">
               <wa-icon slot="icon" name="user"></wa-icon>
@@ -131,8 +136,19 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
   margin-block-end: var(--wa-space-l);
 }
 
-@media (width < 30rem) {
-  .account-label {
+/* Långa e-postadresser kortas av i stället för att trycka ihop sidhuvudet */
+.header-label {
+  display: inline-block;
+  max-inline-size: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+/* Bara ikoner innan texterna hinner krocka med logotypen och radbrytas */
+@media (width < 48rem) {
+  .header-label {
     display: none;
   }
 }

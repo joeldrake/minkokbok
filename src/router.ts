@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { scrollBehavior, trackRecipeOrigin } from './navigation';
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -15,6 +16,7 @@ export const router = createRouter({
     },
     { path: '/admin', name: 'admin', component: () => import('./views/AdminView.vue') },
     { path: '/profil', name: 'profile', component: () => import('./views/ProfileView.vue') },
+    { path: '/hitta', name: 'find', component: () => import('./views/FindPeopleView.vue') },
     // Publika sidor ligger sist så att de inte fångar appens egna sökvägar.
     {
       path: '/:username/:slug',
@@ -29,5 +31,7 @@ export const router = createRouter({
       props: true,
     },
   ],
-  scrollBehavior: (_to, _from, saved) => saved ?? { top: 0 },
+  scrollBehavior,
 });
+
+trackRecipeOrigin(router);

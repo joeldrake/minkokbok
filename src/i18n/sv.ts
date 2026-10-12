@@ -11,6 +11,8 @@ export default {
     logout: "Logga ut",
     account: "Konto",
     publicPage: "Min publika sida",
+    back: "Tillbaka",
+    find: "Hitta kockar",
   },
   cloud: {
     rejected:
@@ -23,11 +25,33 @@ export default {
   },
   list: {
     title: "Mina recept",
+    othersTitle: "Andras recept",
+    following: "Kockar du följer",
+    followingEmpty: "Du följer inga kockar än. Sök upp någon och tryck på Följ.",
+    latest: "Nytt från kockar du följer",
+    saved: "Sparade recept",
+    savedEmpty:
+      "Inga sparade recept än. Tryck på bokmärket på en annan kocks recept, så hamnar det här.",
     search: "Sök bland recepten",
-    emptyTitle: "Kokboken är tom än så länge",
+    emptyTitle: "Välkommen till din kokbok",
     emptyText:
-      "Spara ditt första recept: mormors köttbullar, veckans soppa eller den där kakan alla frågar efter.",
-    emptyAction: "Lägg till ett recept",
+      "Samla alla dina recept på ett ställe: mormors köttbullar, veckans soppa och den där kakan alla frågar efter. Alltid till hands, i telefonen vid spisen eller på datorn när du planerar veckans middagar.",
+    emptyAction: "Lägg till ditt första recept",
+    emptyImport: "Importera recept",
+    emptyFeatures: {
+      write: {
+        title: "Skriv in egna recept",
+        text: "Ingredienser, steg och en bild. Stor och tydlig text som går att läsa på håll medan du lagar maten.",
+      },
+      import: {
+        title: "Importera från webben och bilder",
+        text: "Klistra in en länk från en receptsajt eller fota en kokbokssida, så blir det ett recept du kan granska och spara.",
+      },
+      share: {
+        title: "Dela och hitta inspiration",
+        text: "Gör recept publika, följ andra kockar och spara deras bästa recept i din egen samling.",
+      },
+    },
     noMatches: 'Inga recept matchar "{query}".',
   },
   recipe: {
@@ -75,6 +99,9 @@ export default {
     publicNeedsProfile:
       "Välj ett användarnamn i din profil för att få en publik sida.",
     isPublic: "Publikt",
+    by: "Av",
+    bookmark: "Spara receptet",
+    bookmarked: "Sparat, tryck för att ta bort",
   },
   cover: {
     title: "Omslag",
@@ -169,8 +196,6 @@ export default {
   appearance: {
     title: "Utseende",
     hint: "Välj färg på kokbokens omslag. Valen sparas i den här webbläsaren.",
-    largeText: "Större text",
-    largeTextHint: "Gör ingredienser, steg och receptkorten lättare att läsa, t.ex. vid spisen.",
     palettes: {
       salvia: "Salvia",
       naturlinne: "Naturlinne",
@@ -247,7 +272,16 @@ export default {
       NO_SEATS_AVAILABLE: "Det går inte att skapa fler konton just nu.",
     },
   },
+  find: {
+    title: "Hitta kockar",
+    intro: "Sök på namn eller användarnamn för att hitta någons kokbok.",
+    search: "Namn eller användarnamn",
+    noMatches: 'Hittade ingen som heter "{query}".',
+    recipeCount: "inga publika recept | {n} recept | {n} recept",
+  },
   public: {
+    follow: "Följ",
+    following: "Följer",
     recipesBy: "Recept från {name}",
     empty: "{name} har inte delat några recept än.",
     notFound: 'Hittade ingen kokbok under "{username}".',

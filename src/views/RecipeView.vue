@@ -2,10 +2,12 @@
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { db } from '../db';
+import { cloudEnabled, db } from '../db';
 import type { Ingredient } from '../db/types';
 import { findPublicRecipe, isPublic } from '../db/recipes';
 import { useLiveQuery } from '../composables/useLiveQuery';
+import { bookmark, removeBookmark } from '../db/social';
+import { recipeOrigin } from '../navigation';
 import RecipeCover from '../components/RecipeCover.vue';
 
 /** Antingen /recept/:id, eller den publika adressen /:username/:slug. */
@@ -47,10 +49,44 @@ watch(recipe, (value) => {
   document.title = value ? `${value.title} – Min Kokbok` : 'Min Kokbok';
 });
 
+/**
+ * Vart tillbaka-knappen leder: listan eller profilsidan man kom ifrån, annars författarens
+ * profilsida för ett publicerat recept och startsidan för ett opublicerat.
+ */
+const parent = computed(() => {
+  const value = data.value;
+  if (!value) return undefined;
+  if (recipeOrigin.value) return recipeOrigin.value.fullPath;
+  if (isPublic(value.recipe) && value.profile) {
+    return router.resolve({ name: 'public', params: { username: value.profile.username } }).href;
+  }
+  return router.resolve({ name: 'list' }).href;
+});
+
+/** Går tillbaka i historiken om föregående sida är den vi ska till, så att historiken inte växer. */
+function goToParent() {
+  if (!parent.value) return;
+  if (window.history.state?.back === parent.value) router.back();
+  else router.push(parent.value);
+}
+
 const isOwner = computed(() => {
   const owner = recipe.value?.owner;
   return !owner || owner === db.cloud.currentUserId;
 });
+
+/** En annan kocks publika recept, som man kan spara till fliken "Andras recept". */
+const canBookmark = computed(() => cloudEnabled && !isOwner.value && Boolean(recipe.value && isPublic(recipe.value)));
+const isBookmarked = useLiveQuery(
+  async () => (recipe.value ? (await db.bookmarks.where('recipeId').equals(recipe.value.id).count()) > 0 : false),
+  () => recipe.value?.id,
+);
+
+function toggleBookmark() {
+  if (!recipe.value) return;
+  if (isBookmarked.value) removeBookmark(recipe.value.id);
+  else bookmark(recipe.value.id);
+}
 
 /** Ingredienser grupperade efter rubrik, i ursprunglig ordning. */
 const ingredientGroups = computed(() => {
@@ -65,6 +101,13 @@ const ingredientGroups = computed(() => {
 </script>
 
 <template>
+  <!-- Tillbaka-knappen ligger på omslaget, ovanför pappret -->
+  <nav v-if="recipe && parent" class="page-content recipe-nav">
+    <wa-button class="back" appearance="plain" size="s" @click="goToParent">
+      <wa-icon slot="start" name="chevron-left"></wa-icon>
+      {{ t('nav.back') }}
+    </wa-button>
+  </nav>
   <div class="page-content narrow recipe-paper">
     <div v-if="recipe === undefined" class="wa-stack wa-align-items-center">
       <wa-spinner></wa-spinner>
@@ -82,7 +125,21 @@ const ingredientGroups = computed(() => {
         <RecipeCover v-if="recipe.cover" :cover="recipe.cover" class="cover" />
         <div class="title-row">
           <h1 class="title wa-heading-3xl">{{ recipe.title }}</h1>
-          <div v-if="publicUrl || isOwner" class="title-actions">
+          <div v-if="publicUrl || isOwner || canBookmark" class="title-actions">
+            <wa-button
+              v-if="canBookmark"
+              :class="{ 'quiet-button': !isBookmarked }"
+              appearance="plain"
+              size="s"
+              :title="isBookmarked ? t('recipe.bookmarked') : t('recipe.bookmark')"
+              @click="toggleBookmark"
+            >
+              <wa-icon
+                name="bookmark"
+                :variant="isBookmarked ? 'solid' : 'regular'"
+                :label="isBookmarked ? t('recipe.bookmarked') : t('recipe.bookmark')"
+              ></wa-icon>
+            </wa-button>
             <wa-copy-button
               v-if="publicUrl"
               class="quiet-button"
@@ -101,6 +158,10 @@ const ingredientGroups = computed(() => {
             </wa-button>
           </div>
         </div>
+        <p v-if="!isOwner && data?.profile" class="wa-body-m wa-color-text-quiet lead">
+          {{ t('recipe.by') }}
+          <RouterLink :to="{ name: 'public', params: { username: data.profile.username } }">{{ data.profile.displayName }}</RouterLink>
+        </p>
         <p v-if="recipe.description" class="wa-body-l wa-color-text-quiet lead">{{ recipe.description }}</p>
         <div class="wa-cluster wa-gap-xs">
           <wa-tag v-if="recipe.prepMinutes" appearance="filled" size="s">
@@ -148,6 +209,17 @@ const ingredientGroups = computed(() => {
 </template>
 
 <style scoped>
+.recipe-nav {
+  max-inline-size: 44rem;
+  margin-block-end: var(--wa-space-s);
+}
+
+/* Knappens text i linje med pappersarkets vänsterkant */
+.back {
+  --wa-color-on-quiet: var(--mk-on-linen);
+  margin-inline-start: calc(-1 * var(--wa-space-s));
+}
+
 /* Långa ord (t.ex. en titel) scrollar inuti pappret i stället för att spräcka sidan */
 .recipe-paper {
   overflow-x: auto;

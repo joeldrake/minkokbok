@@ -69,3 +69,18 @@ export interface Profile {
   displayName: string;
   bio?: string;
 }
+
+/** Att användaren följer en annan kock. Ligger i den egna privata realmen. */
+export interface Follow {
+  id: string;
+  /** Användar-id för kocken man följer, samma som profilens owner. */
+  followee: string;
+  createdAt: number;
+}
+
+/** En annan kocks publika recept som användaren sparat. Ligger i den egna privata realmen. */
+export interface Bookmark {
+  id: string;
+  recipeId: string;
+  createdAt: number;
+}

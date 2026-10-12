@@ -10,6 +10,8 @@ import RecipeCover from './RecipeCover.vue';
 const props = defineProps<{
   recipe: Recipe & { realmId?: string };
   showPublicTag?: boolean;
+  /** Kockens namn, för recept av någon annan. */
+  author?: string;
   /** Vart kortet länkar. Standard är receptsidan i appen, /recept/:id. */
   to?: RouteLocationRaw;
 }>();
@@ -17,7 +19,9 @@ const { t } = useI18n();
 
 // Utan innehåll renderas ingen sidfot, så kortet inte får en tom rad längst ner.
 const hasFooter = computed(
-  () => totalMinutes(props.recipe) > 0 || !!props.recipe.servings || (props.showPublicTag && isPublic(props.recipe)),
+  () =>
+    !!props.author ||
+    totalMinutes(props.recipe) > 0 || !!props.recipe.servings || (props.showPublicTag && isPublic(props.recipe)),
 );
 </script>
 
@@ -30,6 +34,9 @@ const hasFooter = computed(
         <p v-if="recipe.description" class="description wa-body-s wa-color-text-quiet">{{ recipe.description }}</p>
       </div>
       <div v-if="hasFooter" slot="footer" class="footer wa-cluster wa-gap-s wa-caption-m wa-color-text-quiet">
+        <span v-if="author" class="wa-cluster wa-gap-2xs">
+          <wa-icon name="user"></wa-icon>{{ author }}
+        </span>
         <span v-if="totalMinutes(recipe)" class="wa-cluster wa-gap-2xs">
           <wa-icon name="clock"></wa-icon>{{ t('recipe.totalTime', { n: totalMinutes(recipe) }) }}
         </span>
@@ -61,7 +68,7 @@ const hasFooter = computed(
   box-shadow: var(--wa-shadow-m);
 }
 
-/* Storlekarna följer inställningen "Större text", se styles/theme.css */
+/* Storlekarna sätts i styles/theme.css */
 .title {
   font-size: var(--mk-card-title);
 }

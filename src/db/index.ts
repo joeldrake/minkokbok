@@ -1,6 +1,6 @@
 import Dexie from 'dexie';
 import dexieCloud, { type DexieCloudTable } from 'dexie-cloud-addon';
-import type { Profile, Recipe } from './types';
+import type { Bookmark, Follow, Profile, Recipe } from './types';
 import { watchSyncRejections } from './syncRejections';
 
 /** Realm som alla, även utloggade besökare, kan läsa. */
@@ -21,11 +21,19 @@ export const cloudEnabled = Boolean(databaseUrl);
 export const db = new Dexie('minkokbok', { addons: [dexieCloud] }) as Dexie & {
   recipes: DexieCloudTable<Recipe, 'id'>;
   profiles: DexieCloudTable<Profile, 'id'>;
+  follows: DexieCloudTable<Follow, 'id'>;
+  bookmarks: DexieCloudTable<Bookmark, 'id'>;
 };
 
 db.version(1).stores({
   recipes: '@id, title, updatedAt, owner, realmId',
   profiles: '@id, username, owner',
+});
+
+// Följningar och bokmärken hamnar i användarens privata realm, så bara man själv ser dem.
+db.version(2).stores({
+  follows: '@id, followee',
+  bookmarks: '@id, recipeId',
 });
 
 if (databaseUrl) {

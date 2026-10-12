@@ -1,12 +1,16 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { db, PUBLIC_REALM } from '../db';
+import { cloudEnabled, db, PUBLIC_REALM } from '../db';
 import { useLiveQuery } from '../composables/useLiveQuery';
+import { useCurrentUser } from '../composables/useCurrentUser';
 import { publicRecipeRoute } from '../db/recipes';
+import { follow, unfollow } from '../db/social';
 import RecipeCard from '../components/RecipeCard.vue';
 
 const props = defineProps<{ username: string }>();
 const { t } = useI18n();
+const { user } = useCurrentUser();
 
 const data = useLiveQuery(
   async () => {
@@ -17,10 +21,20 @@ const data = useLiveQuery(
       .equals(profile.owner)
       .filter((r) => r.realmId === PUBLIC_REALM)
       .sortBy('title');
-    return { profile, recipes };
+    const following = (await db.follows.where('followee').equals(profile.owner!).count()) > 0;
+    return { profile, recipes, following };
   },
-  () => props.username,
+  () => [props.username, user.value?.userId],
 );
+
+const isOwnProfile = computed(() => data.value?.profile.owner === user.value?.userId);
+
+function toggleFollow() {
+  const value = data.value;
+  if (!value) return;
+  if (value.following) unfollow(value.profile.owner!);
+  else follow(value.profile.owner!);
+}
 </script>
 
 <template>
@@ -35,7 +49,19 @@ const data = useLiveQuery(
 
     <template v-else>
       <header class="wa-stack wa-gap-s">
-        <h1 class="wa-heading-2xl">{{ t('public.recipesBy', { name: data.profile.displayName }) }}</h1>
+        <div class="wa-split wa-gap-m">
+          <h1 class="wa-heading-2xl">{{ t('public.recipesBy', { name: data.profile.displayName }) }}</h1>
+          <wa-button
+            v-if="cloudEnabled && !isOwnProfile"
+            :variant="data.following ? 'neutral' : 'brand'"
+            :appearance="data.following ? 'outlined' : 'accent'"
+            size="s"
+            @click="toggleFollow"
+          >
+            <wa-icon slot="start" :name="data.following ? 'check' : 'plus'"></wa-icon>
+            {{ data.following ? t('public.following') : t('public.follow') }}
+          </wa-button>
+        </div>
         <p v-if="data.profile.bio" class="wa-body-l wa-color-text-quiet">{{ data.profile.bio }}</p>
       </header>
       <p v-if="data.recipes.length === 0" class="wa-color-text-quiet">

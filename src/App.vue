@@ -102,10 +102,23 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
 
     <footer v-if="route.name === 'list'" slot="footer" class="app-footer">
       <div class="app-footer-inner wa-split wa-gap-l">
-        <a href="https://github.com/joeldrake/minkokbok" class="wa-cluster wa-gap-xs" target="_blank" rel="noopener">
-          <wa-icon family="brands" name="github" class="footer-github"></wa-icon>
-          {{ t('app.github') }}
-        </a>
+        <div class="wa-stack wa-gap-xs">
+          <span>{{ t('app.createdBy') }}</span>
+          <div class="wa-cluster wa-gap-l">
+            <a href="https://github.com/joeldrake/minkokbok" class="wa-cluster wa-gap-xs" target="_blank" rel="noopener">
+              <wa-icon family="brands" name="github" class="footer-icon"></wa-icon>
+              github.com/joeldrake/minkokbok
+            </a>
+            <a href="https://bsky.app/profile/joeldrake.bsky.social" class="wa-cluster wa-gap-xs" target="_blank" rel="noopener">
+              <wa-icon family="brands" name="bluesky" class="footer-icon"></wa-icon>
+              @joeldrake.bsky.social
+            </a>
+            <a href="mailto:joel@drakeinnovation.se" class="wa-cluster wa-gap-xs">
+              <wa-icon name="envelope" class="footer-icon"></wa-icon>
+              joel@drakeinnovation.se
+            </a>
+          </div>
+        </div>
         <span class="wa-caption-m wa-color-text-quiet">{{ year }}</span>
       </div>
     </footer>
@@ -140,7 +153,7 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
   margin-inline: auto;
 }
 
-.footer-github {
+.footer-icon {
   font-size: var(--wa-font-size-l);
 }
 

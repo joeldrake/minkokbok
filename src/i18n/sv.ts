@@ -1,7 +1,7 @@
 export default {
   app: {
     name: "Min Kokbok",
-    github: "GitHub",
+    createdBy: "Skapad av Joel Drake",
   },
   nav: {
     myRecipes: "Mina recept",

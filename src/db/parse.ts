@@ -1,8 +1,23 @@
 import type { Ingredient, Step } from './types';
 
+/** Enheter som känns igen efter mängden. Annat ord räknas som början på namnet. */
+const UNITS = new Set([
+  'krm', 'tsk', 'msk', 'ml', 'cl', 'dl', 'l', 'liter', 'mg', 'g', 'gram', 'hg', 'kg',
+  'st', 'stk', 'förp', 'förpackning', 'förpackningar', 'paket', 'pkt', 'burk', 'burkar',
+  'påse', 'påsar', 'ask', 'askar', 'flaska', 'flaskor', 'tub', 'tuber', 'kruka', 'krukor',
+  'knippe', 'knippen', 'klyfta', 'klyftor', 'skiva', 'skivor', 'nypa', 'nypor', 'kopp', 'koppar',
+  'portion', 'portioner', 'bit', 'bitar', 'cm', 'mm',
+]);
+
+const AMOUNT = /^(\d+\s+[½¼¾⅓⅔]|[\d.,/½¼¾⅓⅔-]+)\s+(.+)$/;
+
+/** Första kommatecknet som inte är ett decimalkomma, t.ex. inte det i "2,5 dl". */
+const NOTE_SEPARATOR = /(?<!\d),|,(?!\d)/;
+
 /**
- * Tolkar en ingrediensrad som "2 dl mjölk" eller "1 st gul lök, finhackad".
- * Rader som slutar med kolon, t.ex. "Sås:", blir gruppnamn för följande rader.
+ * Tolkar en ingrediensrad som "2 dl mjölk", "2,5 dl grädde" eller
+ * "2 vitlöksklyftor, pressade". Rader som slutar med kolon, t.ex. "Sås:",
+ * blir gruppnamn för följande rader.
  */
 export function parseIngredients(text: string): Ingredient[] {
   const result: Ingredient[] = [];
@@ -15,17 +30,26 @@ export function parseIngredients(text: string): Ingredient[] {
       group = line.slice(0, -1).trim();
       continue;
     }
-    const [main, ...noteParts] = line.split(',');
-    const note = noteParts.join(',').trim() || undefined;
-    const match = main.trim().match(/^([\d.,/½¼¾⅓⅔-]+)\s+(\S+)\s+(.+)$/);
-    const ingredient: Ingredient = match
-      ? { amount: match[1], unit: match[2], name: match[3] }
-      : { name: main.trim() };
+    const separator = line.search(NOTE_SEPARATOR);
+    const main = (separator === -1 ? line : line.slice(0, separator)).trim();
+    const note = separator === -1 ? undefined : line.slice(separator + 1).trim() || undefined;
+    const ingredient = parseMain(main);
     if (note) ingredient.note = note;
     if (group) ingredient.group = group;
     result.push(ingredient);
   }
   return result;
+}
+
+function parseMain(main: string): Ingredient {
+  const match = main.match(AMOUNT);
+  if (!match) return { name: main };
+  const amount = match[1].replace(/\s+/g, ' ');
+  const [unit, ...rest] = match[2].split(/\s+/);
+  if (rest.length && UNITS.has(unit.toLowerCase().replace(/\.$/, ''))) {
+    return { amount, unit, name: rest.join(' ') };
+  }
+  return { amount, name: match[2] };
 }
 
 export function formatIngredients(ingredients: Ingredient[]): string {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { cloudEnabled, db } from './db';
+import { cloudEnabled, db, dbStatus } from './db';
 import { useCurrentUser } from './composables/useCurrentUser';
 import BrandLogo from './components/BrandLogo.vue';
 import LoginDialog from './components/LoginDialog.vue';
@@ -14,6 +14,10 @@ const router = useRouter();
 const route = useRoute();
 const { user, isLoggedIn, isLoading, isAdmin, profile } = useCurrentUser();
 const year = new Date().getFullYear();
+
+function reload() {
+  location.reload();
+}
 
 function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
   const action = event.detail.item.value;
@@ -72,6 +76,14 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
       <wa-callout v-if="!cloudEnabled" variant="warning" appearance="filled" size="s" class="page-content local-notice">
         <wa-icon slot="icon" name="triangle-exclamation"></wa-icon>
         {{ t('cloud.notConfigured') }}
+      </wa-callout>
+      <wa-callout v-if="dbStatus === 'failed'" variant="danger" class="page-content db-failed">
+        <wa-icon slot="icon" name="circle-exclamation"></wa-icon>
+        <div class="wa-split">
+          <span>{{ t('cloud.openFailed') }}</span>
+          <!-- En synk som hänger går inte att avbryta, så ladda om sidan -->
+          <wa-button size="s" appearance="plain" @click="reload()">{{ t('cloud.retry') }}</wa-button>
+        </div>
       </wa-callout>
       <wa-callout v-if="syncRejections.length" variant="danger" class="page-content sync-rejected">
         <wa-icon slot="icon" name="circle-exclamation"></wa-icon>
@@ -133,6 +145,7 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
 }
 
 .local-notice,
+.db-failed,
 .sync-rejected {
   margin-block-end: var(--wa-space-l);
 }

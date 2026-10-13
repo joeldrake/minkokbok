@@ -21,6 +21,8 @@ export default {
     rejectedPermission:
       "En ändring kunde inte sparas eftersom ditt konto saknar behörighet att publicera. Be en administratör om medlemskap.",
     dismiss: "Stäng",
+    openFailed: "Det gick inte att hämta dina recept. Kontrollera internetanslutningen.",
+    retry: "Försök igen",
     notConfigured:
       "Lokalt läge: recepten sparas bara i den här webbläsaren. Konfigurera Dexie Cloud för inloggning och synk.",
   },

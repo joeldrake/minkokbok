@@ -15,8 +15,23 @@ describe('parseIngredients', () => {
     ]);
   });
 
+  it('räknar antal utan enhet', () => {
+    expect(parseIngredients('2 vitlöksklyftor, pressade\n3 gula lökar')).toEqual([
+      { amount: '2', name: 'vitlöksklyftor', note: 'pressade' },
+      { amount: '3', name: 'gula lökar' },
+    ]);
+  });
+
+  it('hanterar decimaler med punkt och komma', () => {
+    expect(parseIngredients('2.5 dl mjölk\n2,5 dl grädde, vispad\n1 ½ msk smör')).toEqual([
+      { amount: '2.5', unit: 'dl', name: 'mjölk' },
+      { amount: '2,5', unit: 'dl', name: 'grädde', note: 'vispad' },
+      { amount: '1 ½', unit: 'msk', name: 'smör' },
+    ]);
+  });
+
   it('går att formatera tillbaka till text', () => {
-    const text = 'Sås:\n½ dl grädde\n1 st gul lök, finhackad';
+    const text = 'Sås:\n½ dl grädde\n2,5 dl mjölk\n1 st gul lök, finhackad\n2 vitlöksklyftor, pressade';
     expect(formatIngredients(parseIngredients(text))).toBe(text);
   });
 });

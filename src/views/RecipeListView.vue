@@ -88,6 +88,12 @@ const features = [
 function authorOf(recipe: { owner?: string }) {
   return recipe.owner ? others.value?.profiles.get(recipe.owner) : undefined;
 }
+
+/** Initialerna i avataren: första bokstaven i för- och efternamn, eller bara den första. */
+function initialsOf(name: string) {
+  const words = name.trim().split(/\s+/);
+  return (words.length > 1 ? words[0][0] + words.at(-1)![0] : words[0].slice(0, 1)).toUpperCase();
+}
 </script>
 
 <template>
@@ -190,19 +196,16 @@ function authorOf(recipe: { owner?: string }) {
       <template v-else>
         <section class="wa-stack wa-gap-m">
           <h2 class="on-linen wa-heading-l">{{ t('list.following') }}</h2>
-          <div v-if="others.cooks.length" class="wa-cluster wa-gap-xs">
+          <div v-if="others.cooks.length" class="wa-cluster wa-gap-m">
             <RouterLink
               v-for="cook in others.cooks"
               :key="cook.id"
               :to="{ name: 'public', params: { username: cook.username } }"
-              class="plain-link"
+              class="cook on-linen wa-stack wa-gap-2xs wa-align-items-center"
             >
-              <wa-tag appearance="filled" pill>{{ cook.displayName }}</wa-tag>
+              <wa-avatar :initials="initialsOf(cook.displayName)" :label="cook.displayName"></wa-avatar>
+              <span class="cook-name wa-caption-m">{{ cook.displayName }}</span>
             </RouterLink>
-            <wa-button appearance="plain" size="s" class="on-linen" @click="router.push({ name: 'find' })">
-              <wa-icon slot="start" name="magnifying-glass"></wa-icon>
-              {{ t('nav.find') }}
-            </wa-button>
           </div>
           <div v-else class="hint paper wa-split wa-gap-m">
             <span>{{ t('list.followingEmpty') }}</span>
@@ -213,11 +216,13 @@ function authorOf(recipe: { owner?: string }) {
           </div>
         </section>
 
-        <section v-if="filteredLatest.length" class="wa-stack wa-gap-m">
-          <h2 class="on-linen wa-heading-l">{{ t('list.latest') }}</h2>
+        <section class="wa-stack wa-gap-m">
+          <h2 class="on-linen wa-heading-l">{{ t('list.saved') }}</h2>
+          <p v-if="others.saved.length === 0" class="hint paper">{{ t('list.savedEmpty') }}</p>
+          <p v-else-if="filteredSaved.length === 0" class="on-linen">{{ t('list.noMatches', { query }) }}</p>
           <div class="wa-grid wa-gap-l recipe-grid">
             <RecipeCard
-              v-for="recipe in filteredLatest"
+              v-for="recipe in filteredSaved"
               :key="recipe.id"
               :recipe="recipe"
               :to="publicRecipeRoute(recipe, authorOf(recipe)?.username)"
@@ -226,13 +231,11 @@ function authorOf(recipe: { owner?: string }) {
           </div>
         </section>
 
-        <section class="wa-stack wa-gap-m">
-          <h2 class="on-linen wa-heading-l">{{ t('list.saved') }}</h2>
-          <p v-if="others.saved.length === 0" class="hint paper">{{ t('list.savedEmpty') }}</p>
-          <p v-else-if="filteredSaved.length === 0" class="on-linen">{{ t('list.noMatches', { query }) }}</p>
+        <section v-if="filteredLatest.length" class="wa-stack wa-gap-m">
+          <h2 class="on-linen wa-heading-l">{{ t('list.latest') }}</h2>
           <div class="wa-grid wa-gap-l recipe-grid">
             <RecipeCard
-              v-for="recipe in filteredSaved"
+              v-for="recipe in filteredLatest"
               :key="recipe.id"
               :recipe="recipe"
               :to="publicRecipeRoute(recipe, authorOf(recipe)?.username)"
@@ -320,6 +323,28 @@ function authorOf(recipe: { owner?: string }) {
 .on-linen {
   color: var(--mk-on-linen);
   --wa-color-on-quiet: var(--mk-on-linen);
+}
+
+/* Kockar man följer: avatar med namnet under, som länk till kockens sida */
+.cook {
+  inline-size: 4.5rem;
+  text-decoration: none;
+}
+
+.cook wa-avatar {
+  --size: 3rem;
+  transition: transform 0.15s;
+}
+
+.cook:hover wa-avatar {
+  transform: scale(1.08);
+}
+
+.cook-name {
+  max-inline-size: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .hint {

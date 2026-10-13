@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatIngredients, parseIngredients, parseSteps } from './parse';
+import { formatIngredients, formatShoppingList, parseIngredients, parseSteps } from './parse';
 
 describe('parseIngredients', () => {
   it('delar upp mängd, enhet och namn', () => {
@@ -43,5 +43,12 @@ describe('parseSteps', () => {
 
   it('tar ett steg per stycke när det finns tomma rader', () => {
     expect(parseSteps('Hacka löken\nfint.\n\nStek')).toEqual([{ text: 'Hacka löken\nfint.' }, { text: 'Stek' }]);
+  });
+});
+
+describe('formatShoppingList', () => {
+  it('sätter namnet först och mängden inom parentes, utan grupper och anteckningar', () => {
+    const ingredients = parseIngredients('Sås:\n½ dl grädde\n1 st gul lök, finhackad\n2 vitlöksklyftor\nsalt');
+    expect(formatShoppingList(ingredients)).toBe('Grädde (½ dl)\nGul lök (1 st)\nVitlöksklyftor (2)\nSalt');
   });
 });

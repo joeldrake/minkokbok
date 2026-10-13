@@ -66,6 +66,21 @@ export function formatIngredients(ingredients: Ingredient[]): string {
   return lines.join('\n');
 }
 
+/**
+ * Inköpslista att klistra in i t.ex. Påminnelser: en ingrediens per rad med namnet först och
+ * mängden inom parentes, "Gul lök (1 st)". Grupprubriker och anteckningar som "finhackad" hör
+ * till tillagningen och tas inte med.
+ */
+export function formatShoppingList(ingredients: Ingredient[]): string {
+  return ingredients
+    .map((i) => {
+      const name = i.name.charAt(0).toUpperCase() + i.name.slice(1);
+      const amount = [i.amount, i.unit].filter(Boolean).join(' ');
+      return amount ? `${name} (${amount})` : name;
+    })
+    .join('\n');
+}
+
 /** Ett steg per stycke (tom rad mellan) eller per rad. Inledande "1." tas bort. */
 export function parseSteps(text: string): Step[] {
   const blocks = text.includes('\n\n') ? text.split(/\n\s*\n/) : text.split('\n');

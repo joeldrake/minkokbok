@@ -95,6 +95,8 @@ export default {
     backToList: "Tillbaka till mina recept",
     copyLink: "Kopiera länk",
     linkCopied: "Länken är kopierad",
+    copyIngredients: "Kopiera ingredienser",
+    ingredientsCopied: "Ingredienserna är kopierade",
     public: "Visa på min publika sida",
     publicHint: "Publika recept syns för alla på {url}",
     publicNeedsLogin: "Logga in för att kunna dela recept publikt.",

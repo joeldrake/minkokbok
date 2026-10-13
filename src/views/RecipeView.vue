@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { cloudEnabled, db } from '../db';
 import type { Ingredient } from '../db/types';
+import { formatShoppingList } from '../db/parse';
 import { findPublicRecipe, isPublic } from '../db/recipes';
 import { useLiveQuery } from '../composables/useLiveQuery';
 import { useCurrentUser } from '../composables/useCurrentUser';
@@ -105,6 +106,8 @@ const ingredientGroups = computed(() => {
   }
   return groups;
 });
+
+const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients ?? []));
 </script>
 
 <template>
@@ -183,7 +186,16 @@ const ingredientGroups = computed(() => {
 
       <div class="recipe-body">
         <section class="wa-stack wa-gap-m">
-          <h2 class="wa-heading-l">{{ t('recipe.ingredients') }}</h2>
+          <div class="section-heading">
+            <h2 class="wa-heading-l">{{ t('recipe.ingredients') }}</h2>
+            <wa-copy-button
+              v-if="shoppingList"
+              class="quiet-button"
+              :value="shoppingList"
+              :copy-label="t('recipe.copyIngredients')"
+              :success-label="t('recipe.ingredientsCopied')"
+            ></wa-copy-button>
+          </div>
           <div v-for="(group, gi) in ingredientGroups" :key="gi" class="wa-stack wa-gap-xs">
             <h3 v-if="group.name" class="wa-heading-s">{{ group.name }}</h3>
             <ul class="ingredients">
@@ -299,6 +311,17 @@ const ingredientGroups = computed(() => {
 /* Långa käll-URL:er radbryts var som helst i stället för att sidoscrolla */
 .source {
   overflow-wrap: anywhere;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wa-space-2xs);
+}
+
+.section-heading h2 {
+  margin: 0;
 }
 
 .recipe-body {

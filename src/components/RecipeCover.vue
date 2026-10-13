@@ -14,9 +14,25 @@ watchEffect((onCleanup) => {
     photoUrl.value = undefined;
     return;
   }
-  const url = URL.createObjectURL(image);
-  photoUrl.value = url;
-  onCleanup(() => URL.revokeObjectURL(url));
+  let url: string | undefined;
+  let cancelled = false;
+  // I Safari blir en Blob från IndexedDB oläsbar om raden skrivs om, t.ex. när
+  // Dexie Cloud sparar en nyss nedladdad bild. En kopia i minnet påverkas inte.
+  image.arrayBuffer().then(
+    (data) => {
+      if (cancelled) return;
+      url = URL.createObjectURL(new Blob([data], { type: image.type }));
+      photoUrl.value = url;
+    },
+    () => {
+      // Raden skrevs troligen om just nu. liveQuery skickar då snart en ny Blob.
+      if (!cancelled) photoUrl.value = undefined;
+    },
+  );
+  onCleanup(() => {
+    cancelled = true;
+    if (url) URL.revokeObjectURL(url);
+  });
 });
 
 const items = computed(() =>

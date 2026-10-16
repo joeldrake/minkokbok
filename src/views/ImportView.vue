@@ -130,7 +130,7 @@ async function onReadPhotos() {
 }
 
 async function addFiles(files: File[]) {
-  const own = await db.recipes.filter((r) => !r.owner || r.owner === db.cloud.currentUserId).toArray();
+  const own = (await db.recipes.toArray()).filter((r) => !r.owner || r.owner === db.cloud.currentUserId);
   const titles = new Set(own.map((r) => r.title.toLowerCase()));
   for (const item of items.value) if (item.draft) titles.add(item.draft.title.toLowerCase());
 

@@ -19,6 +19,12 @@ const databaseUrl = import.meta.env.VITE_DEXIE_CLOUD_URL as string | undefined;
 /** Utan Dexie Cloud-URL körs appen helt lokalt, utan inloggning och synk. */
 export const cloudEnabled = Boolean(databaseUrl);
 
+/**
+ * Läs aldrig recept med .filter(), anyOf() eller each(): då läser Dexie med en cursor.
+ * På en ny enhet är bilderna bara referenser, och Dexie Cloud hämtar dem från nätet mitt
+ * i cursorn. Under tiden stängs transaktionen och frågan blir aldrig klar (oändlig spinner).
+ * Hämta i stället med toArray(), get() eller where().equals() och filtrera i JS.
+ */
 export const db = new Dexie('minkokbok', { addons: [dexieCloud] }) as Dexie & {
   recipes: DexieCloudTable<Recipe, 'id'>;
   profiles: DexieCloudTable<Profile, 'id'>;

@@ -88,11 +88,9 @@ export async function setRecipePublic(id: string, makePublic: boolean): Promise<
  * länkar som delats innan titeln ändrades fortsätter fungera.
  */
 export async function findPublicRecipe(owner: string, slug: string): Promise<StoredRecipe | undefined> {
-  const recipes: StoredRecipe[] = await db.recipes
-    .where('owner')
-    .equals(owner)
-    .filter((r) => isPublic(r) && (r.slug === slug || Boolean(r.slugHistory?.includes(slug))))
-    .toArray();
+  const recipes = (await db.recipes.where('owner').equals(owner).toArray()).filter(
+    (r: StoredRecipe) => isPublic(r) && (r.slug === slug || Boolean(r.slugHistory?.includes(slug))),
+  );
   // Den aktuella slugen går före en gammal, om två recept skulle matcha.
   return recipes.find((r) => r.slug === slug) ?? recipes[0];
 }
@@ -115,7 +113,7 @@ async function slugChanges(recipe: StoredRecipe, title: string): Promise<Partial
 /** Slugs (även gamla) som ägarens andra recept använder. */
 async function takenSlugs(owner: string | undefined, exceptId?: string): Promise<Set<string>> {
   const taken = new Set<string>();
-  const recipes: StoredRecipe[] = await db.recipes.filter((r: StoredRecipe) => r.owner === owner && r.id !== exceptId).toArray();
+  const recipes = (await db.recipes.toArray()).filter((r: StoredRecipe) => r.owner === owner && r.id !== exceptId);
   for (const r of recipes) {
     if (r.slug) taken.add(r.slug);
     for (const s of r.slugHistory ?? []) taken.add(s);

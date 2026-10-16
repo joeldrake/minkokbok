@@ -56,11 +56,12 @@ watch(recipe, (value) => {
 /**
  * Vart tillbaka-knappen leder: listan eller profilsidan man kom ifrån, annars författarens
  * profilsida för ett publicerat recept och startsidan för ett opublicerat.
+ * Medan receptet laddas, utan sida man kom ifrån, går knappen tillbaka i historiken.
  */
 const parent = computed(() => {
+  if (recipeOrigin.value) return recipeOrigin.value.fullPath;
   const value = data.value;
   if (!value) return undefined;
-  if (recipeOrigin.value) return recipeOrigin.value.fullPath;
   if (isPublic(value.recipe) && value.profile) {
     return router.resolve({ name: 'public', params: { username: value.profile.username } }).href;
   }
@@ -111,8 +112,9 @@ const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients
 </script>
 
 <template>
-  <BackButton v-if="recipe && parent" :to="parent" narrow class="recipe-width" />
-  <div class="page-content narrow recipe-paper recipe-width">
+  <!-- Visas redan medan receptet laddas, så att sidan inte hoppar när det kommer -->
+  <BackButton v-if="recipe !== null" :to="parent" narrow class="recipe-width" />
+  <div class="page-content narrow recipe-paper recipe-width" :class="{ loading: recipe === undefined }">
     <div v-if="recipe === undefined" class="wa-stack wa-align-items-center">
       <wa-spinner></wa-spinner>
     </div>
@@ -233,6 +235,11 @@ const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients
 /* Långa ord (t.ex. en titel) scrollar inuti pappret i stället för att spräcka sidan */
 .recipe-paper {
   overflow-x: auto;
+}
+
+/* Arket är lika högt som ett recept brukar vara redan innan det laddats */
+.recipe-paper.loading {
+  min-block-size: 100vh;
 }
 
 .big-icon {

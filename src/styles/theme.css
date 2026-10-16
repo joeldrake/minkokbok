@@ -362,3 +362,21 @@ wa-page:has(> [slot='footer']) > main {
     }
   }
 }
+
+/*
+ * Sidornas spinners visas först efter en kort stund. Lokala frågor är oftast klara på
+ * några millisekunder, och då blinkar spinnern annars till vid varje sidladdning.
+ * Knapparnas laddningsläge ligger i deras shadow DOM och påverkas inte.
+ */
+wa-spinner {
+  animation: spinner-delay 0s 400ms both;
+}
+
+@keyframes spinner-delay {
+  from {
+    visibility: hidden;
+  }
+  to {
+    visibility: visible;
+  }
+}

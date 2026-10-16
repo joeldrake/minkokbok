@@ -25,13 +25,12 @@ const showTabs = computed(() => cloudEnabled && isLoggedIn.value);
 const tab = computed(() => (showTabs.value && route.query.visa === 'andra' ? 'others' : 'mine'));
 
 // Den publika realmen synkas till alla, så filtrera fram de egna recepten.
+// Filtret körs efter toArray(), se kommentaren vid db i db/index.ts.
 const recipes = useLiveQuery(
-  () =>
-    db.recipes
-      .orderBy('updatedAt')
-      .reverse()
-      .filter((r) => !r.owner || r.owner === db.cloud.currentUserId)
-      .toArray(),
+  async () =>
+    (await db.recipes.orderBy('updatedAt').reverse().toArray()).filter(
+      (r) => !r.owner || r.owner === db.cloud.currentUserId,
+    ),
   () => user.value?.userId,
 );
 
@@ -45,7 +44,9 @@ const others = useLiveQuery(
       r && isPublic(r) ? [r] : [],
     );
     const latest = followees.length
-      ? (await db.recipes.where('owner').anyOf(followees).filter(isPublic).toArray())
+      ? (await Promise.all(followees.map((id) => db.recipes.where('owner').equals(id).toArray())))
+          .flat()
+          .filter(isPublic)
           .sort((a, b) => b.createdAt - a.createdAt)
           .slice(0, LATEST_COUNT)
       : [];

@@ -36,11 +36,9 @@ const results = useLiveQuery(
     return Promise.all(
       profiles.map(async (profile) => ({
         profile,
-        recipeCount: await db.recipes
-          .where('owner')
-          .equals(profile.owner!)
-          .filter((r) => r.realmId === PUBLIC_REALM)
-          .count(),
+        recipeCount: (await db.recipes.where('owner').equals(profile.owner!).toArray()).filter(
+          (r) => r.realmId === PUBLIC_REALM,
+        ).length,
       })),
     );
   },

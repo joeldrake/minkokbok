@@ -1,12 +1,57 @@
-import type { Ingredient, Step } from './types';
+import type { Ingredient, Step } from "./types";
 
 /** Enheter som känns igen efter mängden. Annat ord räknas som början på namnet. */
 const UNITS = new Set([
-  'krm', 'tsk', 'msk', 'ml', 'cl', 'dl', 'l', 'liter', 'mg', 'g', 'gram', 'hg', 'kg',
-  'st', 'stk', 'förp', 'förpackning', 'förpackningar', 'paket', 'pkt', 'burk', 'burkar',
-  'påse', 'påsar', 'ask', 'askar', 'flaska', 'flaskor', 'tub', 'tuber', 'kruka', 'krukor',
-  'knippe', 'knippen', 'klyfta', 'klyftor', 'skiva', 'skivor', 'nypa', 'nypor', 'kopp', 'koppar',
-  'portion', 'portioner', 'bit', 'bitar', 'cm', 'mm',
+  "ask",
+  "askar",
+  "bit",
+  "bitar",
+  "burk",
+  "burkar",
+  "cl",
+  "cm",
+  "dl",
+  "flaska",
+  "flaskor",
+  "förp",
+  "förpackning",
+  "förpackningar",
+  "g",
+  "gram",
+  "hekto",
+  "hg",
+  "kg",
+  "kilo",
+  "klyfta",
+  "klyftor",
+  "knippe",
+  "knippen",
+  "kopp",
+  "koppar",
+  "krm",
+  "kruka",
+  "krukor",
+  "l",
+  "liter",
+  "mg",
+  "ml",
+  "mm",
+  "msk",
+  "nypa",
+  "nypor",
+  "paket",
+  "påsar",
+  "påse",
+  "pkt",
+  "portion",
+  "portioner",
+  "skiva",
+  "skivor",
+  "st",
+  "stk",
+  "tsk",
+  "tub",
+  "tuber",
 ]);
 
 const AMOUNT = /^(\d+\s+[½¼¾⅓⅔]|[\d.,/½¼¾⅓⅔-]+)\s+(.+)$/;
@@ -23,16 +68,19 @@ export function parseIngredients(text: string): Ingredient[] {
   const result: Ingredient[] = [];
   let group: string | undefined;
 
-  for (const raw of text.split('\n')) {
+  for (const raw of text.split("\n")) {
     const line = raw.trim();
     if (!line) continue;
-    if (line.endsWith(':')) {
+    if (line.endsWith(":")) {
       group = line.slice(0, -1).trim();
       continue;
     }
     const separator = line.search(NOTE_SEPARATOR);
     const main = (separator === -1 ? line : line.slice(0, separator)).trim();
-    const note = separator === -1 ? undefined : line.slice(separator + 1).trim() || undefined;
+    const note =
+      separator === -1
+        ? undefined
+        : line.slice(separator + 1).trim() || undefined;
     const ingredient = parseMain(main);
     if (note) ingredient.note = note;
     if (group) ingredient.group = group;
@@ -44,10 +92,10 @@ export function parseIngredients(text: string): Ingredient[] {
 function parseMain(main: string): Ingredient {
   const match = main.match(AMOUNT);
   if (!match) return { name: main };
-  const amount = match[1].replace(/\s+/g, ' ');
+  const amount = match[1].replace(/\s+/g, " ");
   const [unit, ...rest] = match[2].split(/\s+/);
-  if (rest.length && UNITS.has(unit.toLowerCase().replace(/\.$/, ''))) {
-    return { amount, unit, name: rest.join(' ') };
+  if (rest.length && UNITS.has(unit.toLowerCase().replace(/\.$/, ""))) {
+    return { amount, unit, name: rest.join(" ") };
   }
   return { amount, name: match[2] };
 }
@@ -60,10 +108,10 @@ export function formatIngredients(ingredients: Ingredient[]): string {
       group = i.group;
       if (group) lines.push(`${group}:`);
     }
-    const main = [i.amount, i.unit, i.name].filter(Boolean).join(' ');
+    const main = [i.amount, i.unit, i.name].filter(Boolean).join(" ");
     lines.push(i.note ? `${main}, ${i.note}` : main);
   }
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -75,21 +123,23 @@ export function formatShoppingList(ingredients: Ingredient[]): string {
   return ingredients
     .map((i) => {
       const name = i.name.charAt(0).toUpperCase() + i.name.slice(1);
-      const amount = [i.amount, i.unit].filter(Boolean).join(' ');
+      const amount = [i.amount, i.unit].filter(Boolean).join(" ");
       return amount ? `${name} (${amount})` : name;
     })
-    .join('\n');
+    .join("\n");
 }
 
 /** Ett steg per stycke (tom rad mellan) eller per rad. Inledande "1." tas bort. */
 export function parseSteps(text: string): Step[] {
-  const blocks = text.includes('\n\n') ? text.split(/\n\s*\n/) : text.split('\n');
+  const blocks = text.includes("\n\n")
+    ? text.split(/\n\s*\n/)
+    : text.split("\n");
   return blocks
-    .map((b) => b.trim().replace(/^\d+[.)]\s*/, ''))
+    .map((b) => b.trim().replace(/^\d+[.)]\s*/, ""))
     .filter(Boolean)
     .map((text) => ({ text }));
 }
 
 export function formatSteps(steps: Step[]): string {
-  return steps.map((s) => s.text).join('\n\n');
+  return steps.map((s) => s.text).join("\n\n");
 }

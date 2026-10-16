@@ -17,11 +17,9 @@ const data = useLiveQuery(
   async () => {
     const profile = await db.profiles.where('username').equals(props.username.toLowerCase()).first();
     if (!profile) return null;
-    const recipes = await db.recipes
-      .where('owner')
-      .equals(profile.owner)
+    const recipes = (await db.recipes.where('owner').equals(profile.owner!).toArray())
       .filter((r) => r.realmId === PUBLIC_REALM)
-      .sortBy('title');
+      .sort((a, b) => a.title.localeCompare(b.title, 'sv'));
     const following = (await db.follows.where('followee').equals(profile.owner!).count()) > 0;
     return { profile, recipes, following };
   },

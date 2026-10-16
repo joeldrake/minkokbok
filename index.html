@@ -18,6 +18,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet" />
+    <!-- Skalet i #app visas först när temat laddats (som sätter variabeln), annars ritas det ostylat -->
+    <style>
+      .app-shell {
+        display: var(--mk-app-shell, none);
+      }
+    </style>
     <script>
       // Vald omslagsfärg (se src/theme/palette.ts), innan sidan ritas
       try {
@@ -31,7 +37,32 @@
     </script>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <!-- Statiskt skal som syns tills Vue monterat och ersätter det, se .app-shell i theme.css -->
+      <div class="app-shell" aria-hidden="true">
+        <div class="app-shell-header">
+          <div class="app-header wa-split">
+            <span class="brand wa-cluster wa-gap-xs">
+              <span class="brand-logo"><!-- app-shell-logo --></span>
+              <span>Min Kokbok</span>
+            </span>
+            <span class="app-shell-button"></span>
+          </div>
+        </div>
+        <div class="app-shell-main">
+          <div class="page-content app-shell-back app-shell-button"></div>
+          <div class="page-content narrow app-shell-sheet"></div>
+        </div>
+      </div>
+      <script>
+        // Arket visas bara på receptsidor (samma sökvägar som i router.ts), övriga sidor ser olika ut.
+        (() => {
+          const path = location.pathname;
+          const recipe = /^\/recept\/(?!(ny|importera)\/?$)[^/]+\/?$/.test(path) || /^\/(?!recept\/)[^/]+\/[^/]+\/?$/.test(path);
+          if (!recipe) document.querySelector('.app-shell-main').replaceChildren();
+        })();
+      </script>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

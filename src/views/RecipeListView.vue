@@ -9,6 +9,7 @@ import { useCurrentUser } from '../composables/useCurrentUser';
 import { isPublic, publicRecipeRoute } from '../db/recipes';
 import RecipeCard from '../components/RecipeCard.vue';
 import { inputValue } from '../utils';
+import BreadLoader from '../components/BreadLoader.vue';
 
 /** Så många av de senaste recepten från kockar man följer visas. */
 const LATEST_COUNT = 6;
@@ -145,8 +146,9 @@ function initialsOf(name: string) {
     </div>
 
     <template v-if="tab === 'mine'">
-      <div v-if="recipes === undefined" class="wa-stack wa-align-items-center">
-        <wa-spinner></wa-spinner>
+      <!-- Samma ark som välkomstrutan, så att första laddningen från molnet inte hoppar -->
+      <div v-if="recipes === undefined" class="welcome loading paper delayed-appear wa-stack wa-align-items-center">
+        <BreadLoader />
       </div>
 
       <section v-else-if="recipes.length === 0" class="welcome paper wa-stack wa-gap-2xl">
@@ -191,7 +193,7 @@ function initialsOf(name: string) {
 
     <template v-else>
       <div v-if="others === undefined" class="wa-stack wa-align-items-center">
-        <wa-spinner></wa-spinner>
+        <BreadLoader />
       </div>
 
       <template v-else>
@@ -251,8 +253,13 @@ function initialsOf(name: string) {
 
 <style scoped>
 .welcome {
-  max-inline-size: 52rem;
+  max-inline-size: var(--mk-sheet-width);
   margin-inline: auto;
+}
+
+.welcome.loading {
+  inline-size: 100%;
+  min-block-size: var(--mk-sheet-loading-height);
 }
 
 .welcome-icon {

@@ -2,6 +2,7 @@ import { defineConfig, type Plugin } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { VitePWA } from 'vite-plugin-pwa';
 import { splashScreens } from './scripts/pwa-assets.ts';
+import { logoSvg } from './src/theme/logo.ts';
 
 /** iOS startskärmar: en <link> per skärmstorlek. Bilderna skapas med `npm run pwa-assets`. */
 function appleSplashScreens(): Plugin {
@@ -16,6 +17,18 @@ function appleSplashScreens(): Plugin {
   };
 }
 
+/** Logotypen i index.htmls statiska skal, samma som BrandLogo.vue ritar. */
+function appShellLogo(): Plugin {
+  return {
+    name: 'app-shell-logo',
+    transformIndexHtml: (html) =>
+      html.replace(
+        '<!-- app-shell-logo -->',
+        logoSvg({ cover: 'var(--mk-logo-cover)', spine: 'var(--mk-logo-spine)', band: 'var(--mk-logo-band)' }),
+      ),
+  };
+}
+
 export default defineConfig({
   plugins: [
     vue({
@@ -27,6 +40,7 @@ export default defineConfig({
       },
     }),
     appleSplashScreens(),
+    appShellLogo(),
     // Service worker: appen startar utan nät (recepten finns redan lokalt via Dexie).
     // Ny version installeras i bakgrunden och aktiveras när man trycker Uppdatera, se UpdatePrompt.vue.
     VitePWA({

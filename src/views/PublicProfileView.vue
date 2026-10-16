@@ -8,6 +8,7 @@ import { publicRecipeRoute } from '../db/recipes';
 import { follow, unfollow } from '../db/social';
 import RecipeCard from '../components/RecipeCard.vue';
 import BackButton from '../components/BackButton.vue';
+import BreadLoader from '../components/BreadLoader.vue';
 
 const props = defineProps<{ username: string }>();
 const { t } = useI18n();
@@ -40,7 +41,7 @@ function toggleFollow() {
   <BackButton to="/" />
   <div class="page-content wa-stack wa-gap-xl">
     <div v-if="data === undefined" class="wa-stack wa-align-items-center">
-      <wa-spinner></wa-spinner>
+      <BreadLoader />
     </div>
 
     <p v-else-if="data === null" class="wa-text-center wa-color-text-quiet">

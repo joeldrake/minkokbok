@@ -129,25 +129,6 @@ function onAccountSelect(event: CustomEvent<{ item: { value: string } }>) {
 </template>
 
 <style scoped>
-.app-header {
-  inline-size: 100%;
-  max-inline-size: 72rem;
-  margin-inline: auto;
-}
-
-.brand {
-  font-family: var(--wa-font-family-heading);
-  font-size: var(--wa-font-size-l);
-  font-weight: var(--wa-font-weight-bold);
-  letter-spacing: 0.01em;
-}
-
-.brand-logo {
-  inline-size: 2.25rem;
-  block-size: 2.25rem;
-  filter: drop-shadow(0 1px 1px rgb(23 45 70 / 0.25));
-}
-
 .app-footer-inner {
   max-inline-size: 72rem;
   margin-inline: auto;

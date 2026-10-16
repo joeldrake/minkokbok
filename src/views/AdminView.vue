@@ -3,6 +3,7 @@ import { onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCurrentUser } from '../composables/useCurrentUser';
 import { inputValue } from '../utils';
+import BreadLoader from '../components/BreadLoader.vue';
 
 interface Account {
   userId: string;
@@ -88,7 +89,7 @@ watch(isAdmin, (admin) => {
   <div class="page-content wa-stack wa-gap-l">
     <h1 class="wa-heading-2xl">{{ t('admin.title') }}</h1>
 
-    <wa-spinner v-if="isLoading"></wa-spinner>
+    <BreadLoader v-if="isLoading" />
 
     <wa-callout v-else-if="!isAdmin" variant="neutral">
       <wa-icon slot="icon" name="circle-info"></wa-icon>
@@ -97,7 +98,7 @@ watch(isAdmin, (admin) => {
 
     <template v-else>
       <wa-callout v-if="error" variant="danger" size="s">{{ error }}</wa-callout>
-      <wa-spinner v-if="!accounts && !error"></wa-spinner>
+      <BreadLoader v-if="!accounts && !error" />
 
       <div v-if="accounts" class="table-wrap">
         <table class="accounts">

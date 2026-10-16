@@ -2,6 +2,7 @@ export default {
   app: {
     name: "Min Kokbok",
     createdBy: "Skapad av Joel Drake",
+    loading: "Laddar…",
   },
   nav: {
     myRecipes: "Mina recept",

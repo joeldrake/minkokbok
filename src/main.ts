@@ -33,4 +33,6 @@ import { router } from './router';
 
 applyPalette();
 
-createApp(App).use(i18n).use(router).mount('#app');
+const app = createApp(App).use(i18n).use(router);
+// Vänta in första vyns chunk, annars ritas sidhuvudet en stund utan sidan (och arket) under.
+router.isReady().then(() => app.mount('#app'));

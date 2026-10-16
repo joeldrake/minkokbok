@@ -24,6 +24,11 @@
   --mk-card-title: var(--wa-font-size-l);
   --mk-card-text: var(--wa-font-size-m);
 
+  /* Bredden på de stora pappersarken: receptet och startsidans välkomst */
+  --mk-sheet-width: 52rem;
+  /* Arkets höjd medan det laddar, ungefär som ett recept */
+  --mk-sheet-loading-height: 100vh;
+
   /* Omslag (linne) och sidor (papper) */
   --mk-linen: var(--mk-cloth);
   --mk-on-linen: var(--mk-cloth-ink);
@@ -186,15 +191,17 @@ html {
   background-color: var(--mk-linen);
 }
 
-/* Omslaget: vävt linne bakom allt */
-wa-page {
+/* Omslaget: vävt linne bakom allt. .app-shell är det statiska skalet i index.html. */
+wa-page,
+.app-shell {
   --menu-width: auto;
   background: var(--mk-weave), var(--mk-linen);
   background-blend-mode: soft-light, soft-light, soft-light, normal;
 }
 
 /* Sidhuvudet som en stygnad kant på omslaget */
-wa-page::part(header) {
+wa-page::part(header),
+.app-shell-header {
   background:
     linear-gradient(90deg, var(--mk-stitch) 60%, transparent 0) left 0 bottom 0.4rem / 0.75rem 1.5px repeat-x,
     var(--mk-weave),
@@ -204,6 +211,9 @@ wa-page::part(header) {
 }
 
 .app-header {
+  inline-size: 100%;
+  max-inline-size: 72rem;
+  margin-inline: auto;
   color: var(--mk-on-linen);
   --wa-color-brand-fill-loud: var(--mk-linen-button);
   --wa-color-brand-on-loud: var(--mk-linen-button-on);
@@ -233,6 +243,23 @@ wa-page::part(header) {
   max-inline-size: 44rem;
 }
 
+/*
+ * Laddningslägen visas först efter en kort stund. Lokala frågor är oftast klara på
+ * några millisekunder, och då blinkar de annars till vid varje sidladdning.
+ */
+.delayed-appear {
+  animation: delayed-appear 0s 400ms both;
+}
+
+@keyframes delayed-appear {
+  from {
+    visibility: hidden;
+  }
+  to {
+    visibility: visible;
+  }
+}
+
 /* Smala sidor (recept, formulär) ligger på ett pappersark */
 .page-content.narrow,
 .paper {
@@ -249,6 +276,68 @@ wa-card:not([appearance]) {
   background: var(--mk-grain), var(--mk-paper);
   background-blend-mode: soft-light, normal;
   box-shadow: var(--mk-paper-shadow);
+}
+
+/* Logotyp och namn i sidhuvudet */
+.brand {
+  font-family: var(--wa-font-family-heading);
+  font-size: var(--wa-font-size-l);
+  font-weight: var(--wa-font-weight-bold);
+  letter-spacing: 0.01em;
+}
+
+.brand-logo {
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  filter: drop-shadow(0 1px 1px rgb(23 45 70 / 0.25));
+}
+
+/*
+ * Statiskt skal i index.html som syns tills Vue monterat: sidhuvud och, på receptsidor,
+ * tillbaka-knappens plats och ett tomt ark. Måtten följer wa-page och RecipeView, så att
+ * inget hoppar när appen tar över. Det visas bara när den här filen har laddats, se index.html.
+ */
+:root {
+  --mk-app-shell: block;
+}
+
+.app-shell {
+  min-block-size: 100dvh;
+}
+
+/* Som wa-pages slottade sidhuvud */
+.app-shell .app-header {
+  padding: var(--wa-space-m);
+}
+
+.app-shell .brand-logo {
+  display: inline-block;
+  line-height: 0;
+}
+
+.app-shell .brand-logo svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.app-shell-main {
+  padding: var(--wa-space-3xl);
+}
+
+/* Tom plats lika hög som knapparna i sidhuvudet och tillbaka-knappen (wa-button size s) */
+.app-shell-button {
+  font-size: var(--wa-font-size-s);
+  block-size: var(--wa-form-control-height);
+}
+
+.app-shell-back {
+  margin-block-end: var(--wa-space-s);
+}
+
+/* .page-content.narrow ger pappret, men receptets ark är bredare */
+.page-content.app-shell-sheet {
+  max-inline-size: var(--mk-sheet-width);
+  min-block-size: var(--mk-sheet-loading-height);
 }
 
 /* Rubriker med varmare typsnitt */
@@ -290,20 +379,24 @@ html {
 }
 
 /* Notch, Dynamic Island och hemindikator. Sidhuvudet ligger under statusfältet (black-translucent). */
-wa-page::part(header) {
+wa-page::part(header),
+.app-shell-header {
   padding-block-start: env(safe-area-inset-top, 0px);
 }
 
-wa-page {
+wa-page,
+.app-shell {
   padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px);
 }
 
-wa-page > main {
+wa-page > main,
+.app-shell-main {
   padding-block-end: calc(var(--wa-space-3xl) + env(safe-area-inset-bottom, 0px));
 }
 
 /* Tillbaka-knappen ovanför innehållet ger redan luft upptill */
-wa-page > main:has(> .back-nav) {
+wa-page > main:has(> .back-nav),
+.app-shell-main:has(> .app-shell-back) {
   padding-block-start: var(--wa-space-m);
 }
 
@@ -339,7 +432,8 @@ wa-page:has(> [slot='footer']) > main {
 
 /* Mobil: mindre linne runt pappret så att texten får plats */
 @media (width < 40rem) {
-  wa-page > main {
+  wa-page > main,
+  .app-shell-main {
     padding-block-start: var(--wa-space-m);
     padding-inline: var(--wa-space-s);
   }
@@ -360,23 +454,5 @@ wa-page:has(> [slot='footer']) > main {
     body {
       overscroll-behavior-y: none;
     }
-  }
-}
-
-/*
- * Sidornas spinners visas först efter en kort stund. Lokala frågor är oftast klara på
- * några millisekunder, och då blinkar spinnern annars till vid varje sidladdning.
- * Knapparnas laddningsläge ligger i deras shadow DOM och påverkas inte.
- */
-wa-spinner {
-  animation: spinner-delay 0s 400ms both;
-}
-
-@keyframes spinner-delay {
-  from {
-    visibility: hidden;
-  }
-  to {
-    visibility: visible;
   }
 }

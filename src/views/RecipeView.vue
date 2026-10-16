@@ -12,6 +12,7 @@ import { bookmark, removeBookmark } from '../db/social';
 import { recipeOrigin } from '../navigation';
 import RecipeCover from '../components/RecipeCover.vue';
 import BackButton from '../components/BackButton.vue';
+import BreadLoader from '../components/BreadLoader.vue';
 
 /** Antingen /recept/:id, eller den publika adressen /:username/:slug. */
 const props = defineProps<{ id?: string; username?: string; slug?: string }>();
@@ -116,7 +117,7 @@ const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients
   <BackButton v-if="recipe !== null" :to="parent" narrow class="recipe-width" />
   <div class="page-content narrow recipe-paper recipe-width" :class="{ loading: recipe === undefined }">
     <div v-if="recipe === undefined" class="wa-stack wa-align-items-center">
-      <wa-spinner></wa-spinner>
+      <BreadLoader />
     </div>
 
     <section v-else-if="recipe === null" class="wa-stack wa-gap-m wa-align-items-center wa-text-center">
@@ -229,7 +230,7 @@ const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients
 <style scoped>
 /* Receptet får ett bredare pappersark än formulären, och tillbaka-knappen följer med */
 .page-content.recipe-width {
-  max-inline-size: 54rem;
+  max-inline-size: var(--mk-sheet-width);
 }
 
 /* Långa ord (t.ex. en titel) scrollar inuti pappret i stället för att spräcka sidan */
@@ -239,7 +240,7 @@ const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients
 
 /* Arket är lika högt som ett recept brukar vara redan innan det laddats */
 .recipe-paper.loading {
-  min-block-size: 100vh;
+  min-block-size: var(--mk-sheet-loading-height);
 }
 
 .big-icon {

@@ -8,6 +8,7 @@ import { useLiveQuery } from '../composables/useLiveQuery';
 import { inputValue } from '../utils';
 import { syncRejections } from '../db/syncRejections';
 import PalettePicker from '../components/PalettePicker.vue';
+import BreadLoader from '../components/BreadLoader.vue';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -92,7 +93,7 @@ async function onSubmit() {
   <div class="page-content narrow wa-stack wa-gap-l">
     <h1 class="wa-heading-2xl">{{ t('profile.title') }}</h1>
 
-    <wa-spinner v-if="isLoading"></wa-spinner>
+    <BreadLoader v-if="isLoading" />
 
     <wa-callout v-else-if="!isLoggedIn" variant="neutral">
       <wa-icon slot="icon" name="circle-info"></wa-icon>

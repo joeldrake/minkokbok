@@ -6,6 +6,7 @@ import type { Recipe } from '../db/types';
 import { isPublic } from '../db/recipes';
 import { totalMinutes } from '../utils';
 import RecipeCover from './RecipeCover.vue';
+import { rememberClickedCard } from '../viewTransition';
 
 const props = defineProps<{
   recipe: Recipe & { realmId?: string };
@@ -26,11 +27,14 @@ const hasFooter = computed(
 </script>
 
 <template>
-  <RouterLink :to="to ?? { name: 'recipe', params: { id: recipe.id } }" class="plain-link card-link">
+  <RouterLink :to="to ?? { name: 'recipe', params: { id: recipe.id } }" class="plain-link card-link"
+    :data-vt-recipe="recipe.id"
+    @click="rememberClickedCard"
+  >
     <wa-card class="recipe-card">
-      <RecipeCover v-if="recipe.cover" slot="media" :cover="recipe.cover" />
+      <RecipeCover v-if="recipe.cover" slot="media" :cover="recipe.cover" data-vt="cover" />
       <div class="wa-stack wa-gap-xs">
-        <h2 class="title wa-heading-m">{{ recipe.title }}</h2>
+        <h2 class="title wa-heading-m"><span class="title-text" data-vt="title">{{ recipe.title }}</span></h2>
         <p v-if="recipe.description" class="description wa-body-s wa-color-text-quiet">{{ recipe.description }}</p>
       </div>
       <div v-if="hasFooter" slot="footer" class="footer wa-cluster wa-gap-s wa-caption-m wa-color-text-quiet">
@@ -71,6 +75,11 @@ const hasFooter = computed(
 /* Storlekarna sätts i styles/theme.css */
 .title {
   font-size: var(--mk-card-title);
+}
+
+/* Lika bred som texten, så att den skalas i takt med receptsidans titel i övergången */
+.title-text {
+  display: inline-block;
 }
 
 .description,

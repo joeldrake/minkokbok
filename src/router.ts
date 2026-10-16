@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { scrollBehavior, trackRecipeOrigin } from './navigation';
+import { animateRecipeTransitions } from './viewTransition';
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -35,3 +36,4 @@ export const router = createRouter({
 });
 
 trackRecipeOrigin(router);
+animateRecipeTransitions(router);

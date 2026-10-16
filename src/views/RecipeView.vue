@@ -127,11 +127,11 @@ const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients
       <wa-button @click="router.push({ name: 'list' })">{{ t('recipe.backToList') }}</wa-button>
     </section>
 
-    <article v-else class="wa-stack wa-gap-xl">
+    <article v-else class="wa-stack wa-gap-xl" :data-vt-recipe="recipe.id">
       <header class="wa-stack wa-gap-m">
-        <RecipeCover v-if="recipe.cover" :cover="recipe.cover" class="cover" />
+        <RecipeCover v-if="recipe.cover" :cover="recipe.cover" class="cover" data-vt="cover" />
         <div class="title-row">
-          <h1 class="title wa-heading-3xl">{{ recipe.title }}</h1>
+          <h1 class="title wa-heading-3xl"><span class="title-text" data-vt="title">{{ recipe.title }}</span></h1>
           <div v-if="publicUrl || isOwner || canBookmark" class="title-actions">
             <wa-button
               v-if="canBookmark"
@@ -266,6 +266,11 @@ const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients
   font-size: var(--title-size);
   overflow-wrap: break-word;
   text-wrap: pretty;
+}
+
+/* Lika bred som texten, så att den skalas i takt med kortets titel i övergången */
+.title-text {
+  display: inline-block;
 }
 
 /* Lika hög som titelns första rad, så att knapparna hamnar mitt för den */

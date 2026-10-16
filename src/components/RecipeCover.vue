@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from 'vue';
+import { computed, ref, watch, watchEffect } from 'vue';
 import type { Cover } from '../db/types';
 import { layoutEmojis } from '../cover/layout';
 
@@ -35,6 +35,11 @@ watchEffect((onCleanup) => {
   });
 });
 
+/** Klart att visas: en bild är laddad, eller så finns ingen att vänta på. Övergångarna väntar in det. */
+const imageLoaded = ref(false);
+watch(photoUrl, () => (imageLoaded.value = false));
+const ready = computed(() => props.cover.kind !== 'photo' || !(props.cover.image instanceof Blob) || imageLoaded.value);
+
 const items = computed(() =>
   props.cover.kind === 'emoji'
     ? layoutEmojis(props.cover).map(({ emoji, x, y, size, turn }) => ({
@@ -50,9 +55,10 @@ const items = computed(() =>
     class="cover"
     :class="cover.kind"
     :data-palette="cover.kind === 'emoji' ? cover.palette : undefined"
+    :data-ready="ready"
     aria-hidden="true"
   >
-    <img v-if="photoUrl" :src="photoUrl" alt="" class="image" />
+    <img v-if="photoUrl" :src="photoUrl" alt="" class="image" @load="imageLoaded = true" />
     <span v-for="(item, i) in items" :key="i" :style="item.style">{{ item.emoji }}</span>
   </div>
 </template>

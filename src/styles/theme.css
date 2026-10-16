@@ -456,3 +456,10 @@ wa-page:has(> [slot='footer']) > main {
     }
   }
 }
+
+/* Omslag och titel glider mellan receptkortet och receptsidan (se src/viewTransition.ts) */
+::view-transition-group(recipe-cover),
+::view-transition-group(recipe-title) {
+  animation-duration: 350ms;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}

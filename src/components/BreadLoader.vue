@@ -25,7 +25,9 @@ const { t } = useI18n();
 
 <style scoped>
 .bread-loader {
-  display: inline-block;
+  /* Centrerar sig själv, oavsett om föräldern centrerar eller inte */
+  display: block;
+  margin-inline: auto;
   inline-size: 4rem;
   block-size: 4rem;
   /* En bit ner på sidan i stället för tätt under rubriken */

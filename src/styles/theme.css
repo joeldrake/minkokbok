@@ -457,9 +457,54 @@ wa-page:has(> [slot='footer']) > main {
   }
 }
 
-/* Omslag och titel glider mellan receptkortet och receptsidan (se src/viewTransition.ts) */
+/* Kortet växer till receptets ark, och omslag, titel och beskrivning glider med (se src/viewTransition.ts) */
+::view-transition-group(recipe-paper),
 ::view-transition-group(recipe-cover),
-::view-transition-group(recipe-title) {
+::view-transition-group(recipe-title),
+::view-transition-group(recipe-description) {
   animation-duration: 350ms;
   animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/*
+ * Arken har olika form, så pappret ritas av övergången själv och innehållet tonas över i
+ * naturlig storlek uppe till vänster, i stället för att tänjas ut till den nya formen.
+ */
+::view-transition-group(recipe-paper) {
+  overflow: clip;
+  background: var(--mk-grain), var(--mk-paper);
+  background-blend-mode: soft-light, normal;
+  border-radius: var(--wa-border-radius-s);
+  box-shadow: var(--mk-paper-shadow);
+}
+
+::view-transition-old(recipe-paper),
+::view-transition-new(recipe-paper) {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: none;
+  object-position: left top;
+}
+
+/* Det som bara finns på receptsidan tonas in när resten nästan är på plats, och snabbt ut tillbaka */
+::view-transition-new(recipe-byline),
+::view-transition-new(recipe-actions) {
+  animation: mk-fade-in 200ms ease-out 150ms both;
+}
+
+::view-transition-old(recipe-byline),
+::view-transition-old(recipe-actions) {
+  animation: mk-fade-out 120ms ease-in both;
+}
+
+@keyframes mk-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes mk-fade-out {
+  to {
+    opacity: 0;
+  }
 }

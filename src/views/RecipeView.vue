@@ -115,7 +115,12 @@ const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients
 <template>
   <!-- Visas redan medan receptet laddas, så att sidan inte hoppar när det kommer -->
   <BackButton v-if="recipe !== null" :to="parent" narrow class="recipe-width" />
-  <div class="page-content narrow recipe-paper recipe-width" :class="{ loading: recipe === undefined }">
+  <div
+    class="page-content narrow recipe-paper recipe-width"
+    :class="{ loading: recipe === undefined }"
+    :data-vt-recipe="recipe?.id"
+    data-vt="paper"
+  >
     <div v-if="recipe === undefined" class="wa-stack wa-align-items-center">
       <BreadLoader />
     </div>
@@ -127,12 +132,12 @@ const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients
       <wa-button @click="router.push({ name: 'list' })">{{ t('recipe.backToList') }}</wa-button>
     </section>
 
-    <article v-else class="wa-stack wa-gap-xl" :data-vt-recipe="recipe.id">
+    <article v-else class="wa-stack wa-gap-xl">
       <header class="wa-stack wa-gap-m">
         <RecipeCover v-if="recipe.cover" :cover="recipe.cover" class="cover" data-vt="cover" />
         <div class="title-row">
           <h1 class="title wa-heading-3xl"><span class="title-text" data-vt="title">{{ recipe.title }}</span></h1>
-          <div v-if="publicUrl || isOwner || canBookmark" class="title-actions">
+          <div v-if="publicUrl || isOwner || canBookmark" class="title-actions" data-vt="actions">
             <wa-button
               v-if="canBookmark"
               :class="{ 'quiet-button': !isBookmarked }"
@@ -165,11 +170,11 @@ const shoppingList = computed(() => formatShoppingList(recipe.value?.ingredients
             </wa-button>
           </div>
         </div>
-        <p v-if="!isOwner && data?.profile" class="wa-body-m wa-color-text-quiet lead">
+        <p v-if="!isOwner && data?.profile" class="wa-body-m wa-color-text-quiet lead" data-vt="byline">
           {{ t('recipe.by') }}
           <RouterLink :to="{ name: 'public', params: { username: data.profile.username } }">{{ data.profile.displayName }}</RouterLink>
         </p>
-        <p v-if="recipe.description" class="wa-body-l wa-color-text-quiet lead">{{ recipe.description }}</p>
+        <p v-if="recipe.description" class="wa-body-l wa-color-text-quiet lead" data-vt="description">{{ recipe.description }}</p>
         <div
           v-if="recipe.prepMinutes || recipe.cookMinutes || recipe.servings || recipe.tags.length"
           class="wa-cluster wa-gap-xs"

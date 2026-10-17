@@ -6,5 +6,5 @@
 DEXIE_CLIENT_ID=
 DEXIE_CLIENT_SECRET=
 
-# Claude API-nyckel för import från bilder. Skapas på https://platform.claude.com/settings/keys
+# Claude API-nyckel för import från bilder och emojiförslag till omslag. Skapas på https://platform.claude.com/settings/keys
 ANTHROPIC_API_KEY=

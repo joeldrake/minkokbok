@@ -1,16 +1,24 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { Cover, EmojiCover } from '../db/types';
+import type { Cover, EmojiCover, Ingredient } from '../db/types';
 import { MAX_COVER_EMOJIS, parseEmojis } from '../cover/emoji';
+import { suggestEmojisWithAi } from '../cover/aiEmojis';
+import { useCurrentUser } from '../composables/useCurrentUser';
 import { prepareCoverImage } from '../cover/image';
 import { PALETTES } from '../theme/palette';
 import { inputValue } from '../utils';
 import RecipeCover from './RecipeCover.vue';
 
-const props = defineProps<{ suggestions: string[] }>();
+const props = defineProps<{
+  suggestions: string[];
+  /** Det AI:n får se när den föreslår emojis. */
+  recipe: { title: string; description: string; ingredients: Ingredient[] };
+}>();
 const cover = defineModel<Cover | undefined>();
 const { t } = useI18n();
+// AI-förslag kostar per anrop, så de är till för member och admin (samma som får publicera).
+const { user, canPublish } = useCurrentUser();
 
 function newSeed() {
   return Math.floor(Math.random() * 2 ** 31);
@@ -70,6 +78,23 @@ function update(changes: Partial<EmojiCover>) {
 function onInput(event: Event) {
   text.value = inputValue(event);
   update({ emojis: parseEmojis(text.value) });
+}
+
+const aiLoading = ref(false);
+const aiError = ref(false);
+
+async function suggestWithAi() {
+  aiLoading.value = true;
+  aiError.value = false;
+  try {
+    const emojis = await suggestEmojisWithAi(props.recipe, user.value?.accessToken);
+    update({ emojis });
+  } catch (error) {
+    console.error('Kunde inte hämta emojiförslag', error);
+    aiError.value = true;
+  } finally {
+    aiLoading.value = false;
+  }
 }
 
 function add(emoji: string) {
@@ -134,6 +159,8 @@ function add(emoji: string) {
       </div>
     </template>
 
+    <wa-callout v-if="aiError" variant="danger" size="s">{{ t('cover.aiError') }}</wa-callout>
+
     <div class="wa-cluster wa-gap-s">
       <wa-button
         :size="cover ? 's' : 'm'"
@@ -151,6 +178,17 @@ function add(emoji: string) {
       <wa-button v-if="emojiCover" size="s" appearance="outlined" @click="update({ seed: newSeed() })">
         <wa-icon slot="start" name="shuffle"></wa-icon>
         {{ t('cover.shuffle') }}
+      </wa-button>
+      <wa-button
+        v-if="emojiCover && canPublish"
+        size="s"
+        appearance="outlined"
+        :loading="aiLoading"
+        :disabled="!recipe.title.trim()"
+        @click="suggestWithAi"
+      >
+        <wa-icon slot="start" name="wand-magic-sparkles"></wa-icon>
+        {{ t('cover.aiSuggest') }}
       </wa-button>
       <wa-button v-if="cover" size="s" appearance="plain" @click="cover = undefined">
         <wa-icon slot="start" name="xmark"></wa-icon>

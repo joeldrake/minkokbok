@@ -6,11 +6,13 @@ import { ORIGIN_ROUTES, whenScrolled } from './navigation';
  *
  * Namnen (view-transition-name) sätts bara under övergången och bara på ett kort, så att
  * samma recept i två listor på sidan inte krockar. Elementen märks i stället med
- * data-vt-recipe (kortet eller receptet) och data-vt="cover"/"title" inuti.
+ * data-vt-recipe (kortet eller receptets ark) och data-vt="paper"/"cover"/"title"/"description".
+ * Receptsidan har också "byline" och "actions", som saknas på kortet och därför bara tonas in eller ut.
+ * Pappret kan vara det märkta elementet självt.
  */
 
 const RECIPE_PAGES = ['recipe', 'publicRecipe'];
-const PARTS = ['cover', 'title'] as const;
+const PARTS = ['paper', 'cover', 'title', 'description', 'byline', 'actions'] as const;
 /** Längsta tid sidan står still medan receptet och bilden laddas. */
 const MAX_WAIT = 1000;
 
@@ -31,7 +33,8 @@ export function rememberClickedCard(event: MouseEvent) {
 
 function tag(root: Element) {
   return PARTS.flatMap((part) => {
-    const el = root.querySelector<HTMLElement>(`[data-vt="${part}"]`);
+    const selector = `[data-vt="${part}"]`;
+    const el = root.matches(selector) ? (root as HTMLElement) : root.querySelector<HTMLElement>(selector);
     if (!el) return [];
     el.style.setProperty('view-transition-name', `recipe-${part}`);
     return [el];
@@ -68,7 +71,8 @@ function startElement(to: RouteLocationNormalized, from: RouteLocationNormalized
     return clickedCard?.isConnected && clickedCard.getAttribute('href') === to.fullPath ? clickedCard : undefined;
   }
   if (RECIPE_PAGES.includes(name) && ORIGIN_ROUTES.includes(to.name as string)) {
-    return document.querySelector<HTMLElement>('article[data-vt-recipe]') ?? undefined;
+    // På receptsidan finns bara receptets eget ark
+    return document.querySelector<HTMLElement>('[data-vt-recipe]') ?? undefined;
   }
 }
 

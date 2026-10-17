@@ -48,9 +48,13 @@ const form = reactive({
 const cover = ref<Cover>();
 // Varifrån receptet kom, t.ex. en Instagram-skärmdump. Följer med när receptet sparas.
 const sourceKind = ref<RecipeSourceKind>();
-const emojiSuggestions = computed(() =>
-  suggestEmojis({ title: form.title, ingredients: parseIngredients(form.ingredients) }),
-);
+const parsedIngredients = computed(() => parseIngredients(form.ingredients));
+const emojiSuggestions = computed(() => suggestEmojis({ title: form.title, ingredients: parsedIngredients.value }));
+const coverRecipe = computed(() => ({
+  title: form.title,
+  description: form.description,
+  ingredients: parsedIngredients.value,
+}));
 const loaded = ref(!props.id);
 const saving = ref(false);
 
@@ -223,7 +227,7 @@ async function onSubmit() {
         @input="form.tags = inputValue($event)"
       ></wa-input>
 
-      <CoverEditor v-model="cover" :suggestions="emojiSuggestions" />
+      <CoverEditor v-model="cover" :suggestions="emojiSuggestions" :recipe="coverRecipe" />
 
       <wa-input
         type="url"

@@ -6,7 +6,8 @@
  *
  * Receptimport från webbsidor (/api/import) är öppen för alla inloggade, se import.ts.
  * Import från bilder (/api/import/photo) anropar Claude och kostar per anrop, så den kräver
- * en roll (member eller admin), se photoImport.ts.
+ * en roll (member eller admin), se photoImport.ts. Detsamma gäller emojiförslag till omslag
+ * (/api/cover/emojis), se emojiSuggest.ts.
  *
  * Publika receptsidor (/[användarnamn]/[slug]) får Open Graph-taggar och schema.org-data inlagda
  * i HTML:en, eftersom de som hämtar förhandsvisningar (Facebook, Slack, iMessage …) och
@@ -15,6 +16,7 @@
 
 import { HttpError, json } from './http';
 import { importImage, importPage } from './import';
+import { suggestCoverEmojis } from './emojiSuggest';
 import { importPhoto } from './photoImport';
 import { ogImageResponse, publicRecipePage } from './og';
 
@@ -78,6 +80,11 @@ async function handleApi(request: Request, url: URL, env: Env): Promise<Response
   if (url.pathname === '/api/import/photo' && request.method === 'POST') {
     await requireMember(request, env);
     return importPhoto(request, env);
+  }
+
+  if (url.pathname === '/api/cover/emojis' && request.method === 'POST') {
+    await requireMember(request, env);
+    return suggestCoverEmojis(request, env);
   }
 
   if (url.pathname.startsWith('/api/import') && request.method === 'GET') {

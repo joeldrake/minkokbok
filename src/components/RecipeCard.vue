@@ -31,11 +31,11 @@ const hasFooter = computed(
     :data-vt-recipe="recipe.id"
     @click="rememberClickedCard"
   >
-    <wa-card class="recipe-card">
+    <wa-card class="recipe-card" data-vt="paper">
       <RecipeCover v-if="recipe.cover" slot="media" :cover="recipe.cover" data-vt="cover" />
       <div class="wa-stack wa-gap-xs">
         <h2 class="title wa-heading-m"><span class="title-text" data-vt="title">{{ recipe.title }}</span></h2>
-        <p v-if="recipe.description" class="description wa-body-s wa-color-text-quiet">{{ recipe.description }}</p>
+        <p v-if="recipe.description" class="description wa-body-s wa-color-text-quiet" data-vt="description">{{ recipe.description }}</p>
       </div>
       <div v-if="hasFooter" slot="footer" class="footer wa-cluster wa-gap-s wa-caption-m wa-color-text-quiet">
         <span v-if="author" class="wa-cluster wa-gap-2xs">

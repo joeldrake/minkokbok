@@ -127,6 +127,8 @@ export default {
     add: "Lägg till {emoji}",
     color: "Färg",
     shuffle: "Blanda om",
+    aiSuggest: "Låt AI föreslå emojis",
+    aiError: "Det gick inte att få förslag just nu. Försök igen om en stund.",
     remove: "Ta bort omslag",
   },
   import: {
